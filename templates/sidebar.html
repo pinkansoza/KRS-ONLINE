@@ -1,0 +1,31 @@
+{{define "sidebar"}}
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo">KRS</div>
+    <div><b>KRS Online</b><small>Prodi Informatika · {{if .User.IsMahasiswa}}Mahasiswa{{else if .User.IsDosen}}Dosen Wali{{else}}Admin Prodi{{end}}</small></div>
+  </div>
+  <ul class="menu">
+    {{if .User.IsMahasiswa}}
+      {{/* menu mahasiswa mulai ada di tahap 3 */}}
+    {{else if .User.IsDosen}}
+      {{/* menu dosen wali dibuat di tahap 5 */}}
+    {{else if .User.IsAdmin}}
+      <li class="grup">Master data</li>
+      <li><a href="/admin/dosen" {{if eq .Menu "dosen-admin"}}class="aktif"{{end}}>Dosen</a></li>
+    {{end}}
+    <li class="grup">Akun</li>
+    <li><a href="/akun" {{if eq .Menu "profil"}}class="aktif"{{end}}>Akun saya</a></li>
+    <li><a href="/notifikasi" {{if eq .Menu "notif"}}class="aktif"{{end}}>Notifikasi {{if .User.NotifBaru}}<span class="badge merah">{{.User.NotifBaru}}</span>{{end}}</a></li>
+    <li><a href="/akun/password" {{if eq .Menu "akun"}}class="aktif"{{end}}>Ganti password</a></li>
+  </ul>
+  <div class="akun">
+    <div class="avatar">{{slice .User.Nama 0 1}}</div>
+    <div class="nama"><b>{{.User.Nama}}</b><small>{{.User.Email}}</small></div>
+    {{/* logout lewat POST, bukan link */}}
+    <form method="post" action="/logout" class="inline">
+      {{template "csrf" .}}
+      <button type="submit" class="btn btn-sm btn-light">Keluar</button>
+    </form>
+  </div>
+</aside>
+{{end}}
