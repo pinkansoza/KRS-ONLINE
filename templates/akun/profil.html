@@ -1,0 +1,13 @@
+{{define "content"}}
+<div class="kepala">
+  <div><h1>Halo, {{.User.Nama}}!</h1><span class="redup">Akun yang sedang login</span></div>
+</div>
+<div class="kartu">
+  <div class="tabel"><table>
+    <tr><th>Nama</th><td>{{.User.Nama}}</td></tr>
+    <tr><th>Email</th><td>{{.User.Email}}</td></tr>
+    <tr><th>Peran</th><td>{{if .User.IsMahasiswa}}Mahasiswa{{else if .User.IsDosen}}Dosen wali{{else}}Admin prodi{{end}}</td></tr>
+  </table></div>
+  <p class="redup kecil">Peran dibaca ulang dari kolom <code>users.role</code> di setiap request (lewat session).</p>
+</div>
+{{end}}

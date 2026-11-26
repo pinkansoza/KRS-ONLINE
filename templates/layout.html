@@ -1,0 +1,32 @@
+{{define "layout"}}<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} — KRS Online Prodi Informatika</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+{{if .User.ID}}
+<div class="app">
+  {{template "sidebar" .}}
+  <div class="isi">
+    {{template "header" .}}
+    <main>
+      {{with .Flash}}<div class="alert ok">{{.}}</div>{{end}}
+      {{with .Galat}}<div class="alert galat">{{.}}</div>{{end}}
+      {{template "content" .}}
+    </main>
+    {{template "footer" .}}
+  </div>
+</div>
+{{else}}
+  {{template "content" .}}
+{{end}}
+</body>
+</html>
+{{end}}
+
+{{/* potongan untuk menyisipkan token CSRF di setiap form POST */}}
+{{define "csrf"}}<input type="hidden" name="csrf_token" value="{{.User.CSRF}}">{{end}}

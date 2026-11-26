@@ -1,0 +1,12 @@
+{{define "header"}}
+<header class="topbar">
+  <div>
+    <b>{{.Title}}</b>
+    {{with .Semester}}<small> · Semester aktif {{.}}</small>{{end}}
+  </div>
+  <div class="kanan">
+    <small>{{.User.Nama}}</small>
+    <a class="lonceng" href="/notifikasi" title="Notifikasi">🔔{{if .User.NotifBaru}}<span class="titik">{{.User.NotifBaru}}</span>{{end}}</a>
+  </div>
+</header>
+{{end}} 

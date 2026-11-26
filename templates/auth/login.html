@@ -1,0 +1,38 @@
+{{define "content"}}
+<div class="login">
+  <div class="kiri">
+    <div class="logo">KRS</div>
+    <h1>KRS Online</h1>
+    <p>Prodi Informatika · Universitas Negeri Semarang</p>
+    <p>Pengisian Kartu Rencana Studi dengan validasi otomatis: prasyarat, bentrok jadwal, batas SKS, kuota, dan daftar tunggu.</p>
+    <div class="akun-demo">
+      Akun demo (password <code>password123</code>):<br>
+      Admin <code>admin@prodi.test</code><br>
+      Dosen wali <code>budi@prodi.test</code> · <code>sari@prodi.test</code><br>
+      Mahasiswa <code>andi@mhs.test</code>
+    </div>
+  </div>
+  <div class="kanan">
+    <div class="kartu">
+      <h2>Masuk</h2>
+      <p class="redup">Gunakan email kampus Anda.</p>
+      {{with .Flash}}<div class="alert ok">{{.}}</div>{{end}}
+      {{with .Data.Error}}<div class="alert galat">{{.}}</div>{{end}}
+      <form class="form" method="post" action="/login">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{.Data.Email}}" class="form-control" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Masuk</button>
+        </div>
+      </form>
+      <p class="redup kecil">Akun dibuat oleh Admin Prodi. Lupa password? Hubungi admin prodi.</p>
+    </div>
+  </div>
+</div>
+{{end}}
