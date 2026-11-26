@@ -1,0 +1,20 @@
+{{define "content"}}
+{{if .Data}}
+<div class="kepala">
+  <h1>Notifikasi</h1>
+  <form method="post" action="/notifikasi/dibaca" class="inline">
+    {{template "csrf" .}}
+    <button class="btn btn-light btn-sm">Tandai semua sudah dibaca</button>
+  </form>
+</div>
+<div class="kartu">
+  <ul class="daftar">
+    {{range .Data}}
+      <li {{if not .IsRead}}class="baru"{{end}}>{{.Message}}<br><small>{{tanggal .CreatedAt}}</small></li>
+    {{end}}
+  </ul>
+</div>
+{{else if not .Galat}}
+<div class="kartu"><p class="redup">Belum ada notifikasi.</p></div>
+{{end}}
+{{end}}
