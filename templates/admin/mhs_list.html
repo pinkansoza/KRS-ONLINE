@@ -1,42 +1,21 @@
 {{define "content"}}
 {{with .Data}}
 <div class="kepala">
-    <div>
-        <h1>Mahasiswa</h1><span class="redup">{{len .Mhs}} mahasiswa</span>
-    </div>
-    <div class="aksi"><a class="btn" href="/admin/mahasiswa/baru">+ Tambah mahasiswa</a></div>
+  <div><h1>Mahasiswa</h1><span class="redup">{{len .Mhs}} mahasiswa</span></div>
+  <div class="aksi"><a class="btn" href="/admin/mahasiswa/baru">+ Tambah mahasiswa</a></div>
 </div>
 <form class="filter" method="get" action="/admin/mahasiswa">
-    <input type="search" name="q" value="{{.Q}}" placeholder="Cari nama / NIM…">
-    <button class="btn btn-light" type="submit">Cari</button>
+  <input type="search" name="q" value="{{.Q}}" placeholder="Cari nama / NIM…">
+  <button class="btn btn-light" type="submit">Cari</button>
 </form>
-<div class="tabel">
-    <table>
-        <tr>
-            <th>NIM</th>
-            <th>Nama</th>
-            <th>Email</th>
-            <th class="angka">Angkatan</th>
-            <th>Kurikulum</th>
-            <th>Dosen wali</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-        {{range .Mhs}}
-        <tr>
-            <td>{{.NIM}}</td>
-            <td>{{.Name}}</td>
-            <td class="kecil">{{.Email}}</td>
-            <td class="angka">{{.EntryYear}}</td>
-            <td>{{.CurriculumName}}</td>
-            <td>{{.AdvisorName}}</td>
-            <td><span class="badge {{badge .Status}}">{{.Status}}</span></td>
-            <td><a class="btn btn-sm btn-light" href="/admin/mahasiswa/{{.ID}}/edit">Ubah</a></td>
-        </tr>
-        {{else}}<tr>
-            <td colspan="8" class="redup">Tidak ada data.</td>
-        </tr>{{end}}
-    </table>
-</div>
+<div class="tabel"><table>
+  <tr><th>NIM</th><th>Nama</th><th>Email</th><th class="angka">Angkatan</th><th>Kurikulum</th><th>Dosen wali</th><th>Status</th><th></th></tr>
+  {{range .Mhs}}
+  <tr><td>{{.NIM}}</td><td>{{.Name}}</td><td class="kecil">{{.Email}}</td><td class="angka">{{.EntryYear}}</td>
+    <td>{{.CurriculumName}}</td><td>{{.AdvisorName}}</td><td><span class="badge {{badge .Status}}">{{.Status}}</span></td>
+    <td><a class="btn btn-sm btn-light" href="/admin/mahasiswa/{{.ID}}/edit">Ubah</a>
+      <a class="btn btn-sm btn-light" href="/admin/nilai?mahasiswa={{.ID}}">Nilai</a></td></tr>
+  {{else}}<tr><td colspan="8" class="redup">Tidak ada data.</td></tr>{{end}}
+</table></div>
 {{end}}
 {{end}}

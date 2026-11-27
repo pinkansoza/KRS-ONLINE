@@ -2,27 +2,27 @@
 <aside class="sidebar">
   <div class="brand">
     <div class="logo">KRS</div>
-    <div><b>KRS Online</b><small>Prodi Informatika · {{if .User.IsMahasiswa}}Mahasiswa{{else if .User.IsDosen}}Dosen
-        Wali{{else}}Admin Prodi{{end}}</small></div>
+    <div><b>KRS Online</b><small>Prodi Informatika · {{if .User.IsMahasiswa}}Mahasiswa{{else if .User.IsDosen}}Dosen Wali{{else}}Admin Prodi{{end}}</small></div>
   </div>
   <ul class="menu">
     {{if .User.IsMahasiswa}}
-    {{/* menu mahasiswa mulai ada di tahap 3 */}}
+      <li><a href="/mhs/transkrip" {{if eq .Menu "transkrip"}}class="aktif"{{end}}>Transkrip</a></li>
     {{else if .User.IsDosen}}
-    {{/* menu dosen wali dibuat di tahap 5 */}}
+      {{/* menu dosen wali dibuat di tahap 5 */}}
     {{else if .User.IsAdmin}}
-    <li><a href="/admin" {{if eq .Menu "dashboard" }}class="aktif" {{end}}>Dashboard &amp; periode</a></li>
-    <li class="grup">Master data</li>
-    <li><a href="/admin/mk" {{if eq .Menu "mk" }}class="aktif" {{end}}>Mata kuliah &amp; prasyarat</a></li>
-    <li><a href="/admin/kesetaraan" {{if eq .Menu "setara" }}class="aktif" {{end}}>Kesetaraan kurikulum</a></li>
-    <li><a href="/admin/mahasiswa" {{if eq .Menu "mhs" }}class="aktif" {{end}}>Mahasiswa</a></li>
-    <li><a href="/admin/dosen" {{if eq .Menu "dosen-admin" }}class="aktif" {{end}}>Dosen</a></li>
+      <li><a href="/admin" {{if eq .Menu "dashboard"}}class="aktif"{{end}}>Dashboard &amp; periode</a></li>
+      <li class="grup">Master data</li>
+      <li><a href="/admin/mk" {{if eq .Menu "mk"}}class="aktif"{{end}}>Mata kuliah &amp; prasyarat</a></li>
+      <li><a href="/admin/kesetaraan" {{if eq .Menu "setara"}}class="aktif"{{end}}>Kesetaraan kurikulum</a></li>
+      <li><a href="/admin/kelas" {{if eq .Menu "kelas"}}class="aktif"{{end}}>Kelas, jadwal &amp; kuota</a></li>
+      <li><a href="/admin/mahasiswa" {{if eq .Menu "mhs"}}class="aktif"{{end}}>Mahasiswa</a></li>
+      <li><a href="/admin/dosen" {{if eq .Menu "dosen-admin"}}class="aktif"{{end}}>Dosen</a></li>
+      <li><a href="/admin/nilai" {{if eq .Menu "nilai"}}class="aktif"{{end}}>Input nilai</a></li>
     {{end}}
     <li class="grup">Akun</li>
-    <li><a href="/akun" {{if eq .Menu "profil" }}class="aktif" {{end}}>Akun saya</a></li>
-    <li><a href="/notifikasi" {{if eq .Menu "notif" }}class="aktif" {{end}}>Notifikasi {{if .User.NotifBaru}}<span
-          class="badge merah">{{.User.NotifBaru}}</span>{{end}}</a></li>
-    <li><a href="/akun/password" {{if eq .Menu "akun" }}class="aktif" {{end}}>Ganti password</a></li>
+    <li><a href="/akun" {{if eq .Menu "profil"}}class="aktif"{{end}}>Akun saya</a></li>
+    <li><a href="/notifikasi" {{if eq .Menu "notif"}}class="aktif"{{end}}>Notifikasi {{if .User.NotifBaru}}<span class="badge merah">{{.User.NotifBaru}}</span>{{end}}</a></li>
+    <li><a href="/akun/password" {{if eq .Menu "akun"}}class="aktif"{{end}}>Ganti password</a></li>
   </ul>
   <div class="akun">
     <div class="avatar">{{slice .User.Nama 0 1}}</div>

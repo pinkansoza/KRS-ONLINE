@@ -1,0 +1,47 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+  <div>
+    <a href="/admin/kelas?semester={{.SemesterID}}" class="kecil">‹ Kelas</a>
+    <h1>{{.CourseCode}} {{.CourseName}} — kelas {{.Code}}</h1>
+    <span class="redup">{{.Credits}} SKS · {{.LecturerName}} · ruang {{.Room}}</span>
+  </div>
+  <div class="aksi">
+    <a class="btn btn-light" href="/admin/kelas/{{.ID}}/edit">Ubah kelas / kuota</a>
+    <form method="post" action="/admin/kelas/{{.ID}}/hapus" class="inline" data-confirm="Hapus kelas ini? Hanya bisa jika belum ada peserta/antrean.">
+      {{template "csrf" $}}<button class="btn btn-merah">Hapus kelas</button></form>
+  </div>
+</div>
+<div class="grid">
+  <div class="stat"><div class="judul">Terisi</div><div class="angka">{{.Enrolled}} <small>/ {{.Quota}}</small></div>
+    <div class="bar"><span class="p{{persen .Enrolled .Quota}}"></span></div></div>
+  <div class="stat"><div class="judul">Daftar tunggu</div><div class="angka">{{.Waitlist}}</div></div>
+</div>
+<div class="kartu">
+  <h2>Sesi jadwal</h2>
+  <p class="redup">Satu kelas boleh punya lebih dari satu sesi (FR-B2).</p>
+  <div class="tabel"><table>
+    <tr><th>Hari</th><th>Mulai</th><th>Selesai</th><th>Ruang</th><th></th></tr>
+    {{range .Schedules}}
+    <tr><td>{{hari .Day}}</td><td>{{.Start}}</td><td>{{.End}}</td><td>{{.Room}}</td>
+      <td><form method="post" action="/admin/kelas/{{$.Data.ID}}/jadwal/{{.ID}}/hapus" class="inline" data-confirm="Hapus sesi {{hari .Day}} {{.Start}}?">
+        {{template "csrf" $}}<button class="btn btn-sm btn-merah">Hapus</button></form></td></tr>
+    {{else}}<tr><td colspan="5" class="redup">Belum ada jadwal.</td></tr>{{end}}
+  </table></div>
+  <form method="post" action="/admin/kelas/{{.ID}}/jadwal" class="baris">
+    {{template "csrf" $}}
+    <div class="form-group"><label for="day">Hari</label>
+      <select id="day" name="day"><option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option>
+        <option value="4">Kamis</option><option value="5">Jumat</option><option value="6">Sabtu</option></select>
+      {{with index $e "day"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="start">Mulai</label><input type="time" id="start" name="start" required>
+      {{with index $e "start"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="end">Selesai</label><input type="time" id="end" name="end" required>
+      {{with index $e "end"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="sroom">Ruang</label><input type="text" id="sroom" name="room" value="{{.Room}}" maxlength="30"></div>
+    <button class="btn" type="submit">Tambah sesi</button>
+  </form>
+</div>
+{{end}}
+{{end}}

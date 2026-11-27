@@ -1,0 +1,39 @@
+{{define "content"}}
+{{$base := .Data.Base}}{{$tab := .Data.Tab}}
+{{with .Data.T}}
+<div class="kepala">
+  <div><h1>Transkrip nilai</h1><span class="redup">{{.Mhs.Name}} · {{.Mhs.NIM}} · {{.Mhs.CurriculumName}}</span></div>
+  <div class="aksi no-print"><button class="btn btn-light" type="button" data-print>Cetak / simpan PDF</button></div>
+</div>
+<div class="kartu">
+  Total SKS lulus: <b>{{.SKSLulus}}</b> · Total SKS ditempuh: <b>{{.TotalSKS}}</b> · IPK: <b>{{koma .IPK}}</b>
+  {{if .AdaIPS}} · IPS terakhir ({{.LabelTerakhir}}): <b>{{koma .IPSTerakhir}}</b>{{end}}
+</div>
+<div class="tab no-print">
+  <a href="{{$base}}" {{if ne $tab "semester"}}class="aktif"{{end}}>Per mata kuliah</a>
+  <a href="{{$base}}?tab=semester" {{if eq $tab "semester"}}class="aktif"{{end}}>Per semester</a>
+</div>
+
+{{if eq $tab "semester"}}
+  {{range .PerSemester}}
+  <div class="kartu">
+    <h3>{{.Label}} <small>· {{.SKS}} SKS · IPS {{koma .IPS}}</small></h3>
+    <div class="tabel"><table>
+      <tr><th>Kode</th><th>Mata kuliah</th><th class="angka">SKS</th><th>Nilai</th><th class="angka">Bobot</th></tr>
+      {{range .Nilai}}<tr><td>{{.CourseCode}}</td><td>{{.CourseName}}</td><td class="angka">{{.Credits}}</td><td><b>{{.Letter}}</b></td><td class="angka">{{koma .Point}}</td></tr>{{end}}
+    </table></div>
+  </div>
+  {{else}}<div class="kartu redup">Belum ada riwayat nilai.</div>{{end}}
+{{else}}
+  <div class="tabel"><table>
+    <tr><th>Kode</th><th>Mata kuliah</th><th class="angka">SKS</th><th>Nilai</th><th class="angka">Bobot</th><th class="angka">SKS × bobot</th><th>Semester diambil</th><th>Keterangan</th></tr>
+    {{range .Baris}}
+    <tr><td>{{.CourseCode}}</td><td>{{.CourseName}}</td><td class="angka">{{.Credits}}</td><td><b>{{.Letter}}</b></td>
+      <td class="angka">{{koma .Point}}</td><td class="angka">{{printf "%.1f" (kali .Credits .Point)}}</td><td>{{.SemesterLabel}}</td>
+      <td class="kecil">{{with .Keterangan}}{{.}} (riwayat: {{range $i, $p := .Percobaan}}{{if $i}}, {{end}}{{$p.Letter}} {{$p.SemesterLabel}}{{end}}){{end}}{{if lt .Point 2.0}} <span class="badge kuning">boleh diulang</span>{{end}}</td></tr>
+    {{else}}<tr><td colspan="8" class="redup">Belum ada riwayat nilai.</td></tr>{{end}}
+  </table></div>
+  <p class="redup kecil">IPK = Σ(SKS × bobot) / Σ SKS = {{printf "%.1f" .TotalBobot}} / {{.TotalSKS}} = {{koma .IPK}}. Mata kuliah yang diulang hanya dihitung sekali dengan nilai terbaik.</p>
+{{end}}
+{{end}}
+{{end}}
