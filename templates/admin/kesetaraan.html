@@ -1,0 +1,53 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+    <div>
+        <h1>Kesetaraan kurikulum</h1>
+        <span class="redup">MK lama yang sudah lulus memenuhi prasyarat MK baru yang setara (berlaku dua arah, nilai
+            minimal tetap dicek).</span>
+    </div>
+</div>
+<div class="kartu">
+    <form method="post" action="/admin/kesetaraan" class="baris">
+        {{template "csrf" $}}
+        <div class="form-group"><label>MK lama</label>
+            <select name="old_course_id">
+                <option value="0">— pilih —</option>{{range .MK}}<option value="{{.ID}}">{{.Code}} {{.Name}}
+                    ({{.CurriculumName}})</option>{{end}}
+            </select>
+        </div>
+        <div class="form-group"><label>setara dengan MK baru</label>
+            <select name="new_course_id">
+                <option value="0">— pilih —</option>{{range .MK}}<option value="{{.ID}}">{{.Code}} {{.Name}}
+                    ({{.CurriculumName}})</option>{{end}}
+            </select>
+        </div>
+        <button class="btn" type="submit">Tambah</button>
+    </form>
+</div>
+<div class="tabel">
+    <table>
+        <tr>
+            <th>MK lama</th>
+            <th></th>
+            <th>MK baru</th>
+            <th></th>
+        </tr>
+        {{range .Daftar}}
+        <tr>
+            <td>{{.OldCode}} {{.OldName}}</td>
+            <td>⇄</td>
+            <td>{{.NewCode}} {{.NewName}}</td>
+            <td>
+                <form method="post" action="/admin/kesetaraan/{{.ID}}/hapus" class="inline"
+                    data-confirm="Hapus kesetaraan {{.OldCode}} ⇄ {{.NewCode}}?">
+                    {{template "csrf" $}}<button class="btn btn-sm btn-merah">Hapus</button></form>
+            </td>
+        </tr>
+        {{else}}<tr>
+            <td colspan="4" class="redup">Belum ada data.</td>
+        </tr>{{end}}
+    </table>
+</div>
+{{end}}
+{{end}}

@@ -1,0 +1,64 @@
+package admin
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+    <div>
+        <h1>Mata kuliah</h1><span class="redup">{{len .MK}} mata kuliah</span>
+    </div>
+    <div class="aksi"><a class="btn" href="/admin/mk/baru">+ Tambah mata kuliah</a><a class="btn btn-light"
+            href="/admin/kesetaraan">Kesetaraan kurikulum</a></div>
+</div>
+<form class="filter" method="get" action="/admin/mk">
+    <input type="search" name="q" value="{{.Q}}" placeholder="Cari kode / nama…">
+    <select name="kurikulum">
+        <option value="0">Semua kurikulum</option>
+        {{range .Kurikulum}}<option value="{{.ID}}" {{if eq .ID $.Data.Kur}}selected{{end}}>{{.Name}}</option>{{end}}
+    </select>
+    <button class="btn btn-light" type="submit">Cari</button>
+</form>
+<div class="tabel">
+    <table>
+        <tr>
+            <th>Kode</th>
+            <th>Nama</th>
+            <th class="angka">SKS</th>
+            <th>Kurikulum</th>
+            <th class="angka">Smt anjuran</th>
+            <th class="angka">Grup prasyarat</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        {{range .MK}}
+        <tr {{if not .IsActive}}class="redup" {{end}}>
+            <td>{{.Code}}</td>
+            <td>{{.Name}}</td>
+            <td class="angka">{{.Credits}}</td>
+            <td>{{.CurriculumName}}</td>
+            <td class="angka">{{if .RecommendedSemester}}{{.RecommendedSemester}}{{else}}–{{end}}</td>
+            <td class="angka">{{index $.Data.JmlGrup .ID}}</td>
+            <td>{{if .IsActive}}<span class="badge hijau">Aktif</span>{{else}}<span
+                    class="badge abu">Nonaktif</span>{{end}}</td>
+            <td><a class="btn btn-sm btn-light" href="/admin/mk/{{.ID}}">Detail &amp; prasyarat</a></td>
+        </tr>
+        {{else}}<tr>
+            <td colspan="8" class="redup">Tidak ada data.</td>
+        </tr>{{end}}
+    </table>
+</div>
+
+<div class="kartu">
+    <h3>Kurikulum</h3>
+    <ul class="daftar">{{range .Kurikulum}}<li>{{.Name}} · berlaku {{.YearStart}} {{if .IsActive}}<span
+                class="badge hijau">Aktif</span>{{end}}</li>{{end}}</ul>
+    <form method="post" action="/admin/kurikulum" class="baris">
+        {{template "csrf" $}}
+        <div class="form-group"><label for="kname">Nama kurikulum baru</label><input type="text" id="kname" name="name"
+                maxlength="100" required></div>
+        <div class="form-group"><label for="kyear">Tahun berlaku</label><input type="number" id="kyear"
+                name="year_start" min="1990" max="2100" required></div>
+        <label class="cek"><input type="checkbox" name="is_active" value="1" checked> Aktif</label>
+        <button class="btn btn-light" type="submit">Tambah kurikulum</button>
+    </form>
+</div>
+{{end}}
+{{end}}

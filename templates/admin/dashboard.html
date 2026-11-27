@@ -1,0 +1,41 @@
+{{define "content"}}
+<div class="kepala">
+    <div>
+        <h1>Dashboard admin</h1><span class="redup">Semester dan periode KRS</span>
+    </div>
+    <div class="aksi"><a class="btn btn-light" href="/admin/semester/baru">+ Semester baru</a></div>
+</div>
+
+<div class="kartu">
+    <h2>Semester &amp; periode</h2>
+    <div class="tabel">
+        <table>
+            <tr>
+                <th>Semester</th>
+                <th>Pengisian KRS</th>
+                <th>Persetujuan dosen wali</th>
+                <th>Masa perubahan</th>
+                <th></th>
+            </tr>
+            {{range .Data.Semester}}
+            <tr>
+                <td><b>{{.Label}}</b> {{if .IsActive}}<span class="badge hijau">Aktif</span>{{end}}</td>
+                <td class="kecil">{{tanggal .KRSStart}}<br>s.d. {{tanggal .KRSEnd}}</td>
+                <td class="kecil">{{tanggal .ApprovalStart}}<br>s.d. {{tanggal .ApprovalEnd}}</td>
+                <td class="kecil">{{tanggal .ChangeStart}}<br>s.d. {{tanggal .ChangeEnd}}</td>
+                <td>
+                    <a class="btn btn-sm btn-light" href="/admin/semester/{{.ID}}/edit">Atur periode</a>
+                    {{if not .IsActive}}
+                    <form method="post" action="/admin/semester/{{.ID}}/aktifkan" class="inline"
+                        data-confirm="Jadikan {{.Label}} semester aktif?">
+                        {{template "csrf" $}}<button class="btn btn-sm">Jadikan aktif</button></form>
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+        </table>
+    </div>
+    <p class="redup kecil">Pengisian dan perubahan KRS hanya bisa dilakukan mahasiswa di dalam periode yang ditetapkan
+        di sini (BR-11).</p>
+</div>
+{{end}}

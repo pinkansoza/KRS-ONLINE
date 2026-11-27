@@ -1,0 +1,52 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div>
+    <a href="/admin/mk" class="kecil">‹ Mata kuliah</a>
+    <h1>{{.MK.Code}} {{.MK.Name}} {{if not .MK.IsActive}}<span class="badge abu">Nonaktif</span>{{end}}</h1>
+    <span class="redup">{{.MK.Credits}} SKS · {{.MK.CurriculumName}}{{if .MK.RecommendedSemester}} · semester anjuran {{.MK.RecommendedSemester}}{{end}}</span>
+  </div>
+  <div class="aksi">
+    <a class="btn btn-light" href="/admin/mk/{{.MK.ID}}/edit">Ubah</a>
+    {{/* soft delete dengan kolom boolean is_active */}}
+    <form method="post" action="/admin/mk/{{.MK.ID}}/aktif" class="inline" data-confirm="{{if .MK.IsActive}}Nonaktifkan{{else}}Aktifkan{{end}} mata kuliah ini?">
+      {{template "csrf" $}}
+      <input type="hidden" name="aktif" value="{{if .MK.IsActive}}0{{else}}1{{end}}">
+      <button class="btn {{if .MK.IsActive}}btn-merah{{end}}">{{if .MK.IsActive}}Nonaktifkan{{else}}Aktifkan{{end}}</button>
+    </form>
+  </div>
+</div>
+
+<div class="kartu">
+  <div class="kepala"><h2>Prasyarat</h2>
+    <form method="post" action="/admin/mk/{{.MK.ID}}/grup" class="inline">{{template "csrf" $}}<button class="btn btn-sm">+ Tambah grup</button></form></div>
+  <p class="redup">Semua grup wajib terpenuhi (<b>AND</b>). Di dalam satu grup cukup salah satu butir (<b>OR</b>) lulus dengan nilai ≥ minimal. MK setara kurikulum lama ikut dihitung. Sistem menolak prasyarat siklik.</p>
+  {{range $gi, $g := .Grup}}
+  <div class="kartu">
+    <div class="kepala"><h3>Grup {{$g.GroupNo}} {{if $gi}}<small class="redup">(AND dengan grup sebelumnya)</small>{{end}}</h3>
+      <form method="post" action="/admin/mk/{{$.Data.MK.ID}}/grup/{{$g.ID}}/hapus" class="inline" data-confirm="Hapus grup {{$g.GroupNo}} beserta isinya?">
+        {{template "csrf" $}}<button class="btn btn-sm btn-merah">Hapus grup</button></form></div>
+    <ul class="daftar">
+      {{range $i, $it := $g.Items}}
+      <li>{{if $i}}<b>atau</b> {{end}}{{$it.Code}} {{$it.Name}} — min <b>{{$it.MinLetter}}</b>
+        <form method="post" action="/admin/mk/{{$.Data.MK.ID}}/butir/{{$it.ID}}/hapus" class="inline">
+          {{template "csrf" $}}<button class="btn btn-sm btn-light">hapus</button></form></li>
+      {{else}}<li class="redup">Grup kosong (diabaikan saat validasi).</li>{{end}}
+    </ul>
+    <form method="post" action="/admin/mk/{{$.Data.MK.ID}}/grup/{{$g.ID}}/butir" class="baris">
+      {{template "csrf" $}}
+      <div class="form-group"><label>Tambah butir (OR)</label>
+        <select name="prereq_course_id"><option value="0">— pilih mata kuliah —</option>
+          {{range $.Data.Semua}}{{if ne .ID $.Data.MK.ID}}<option value="{{.ID}}">{{.Code}} {{.Name}} ({{.CurriculumName}})</option>{{end}}{{end}}
+        </select></div>
+      <div class="form-group"><label>Nilai minimal</label>
+        <select name="min_letter">{{range $.Data.Skala}}<option value="{{.Letter}}" {{if eq .Letter "C"}}selected{{end}}>{{.Letter}} ({{koma .Point}})</option>{{end}}</select></div>
+      <button class="btn btn-light" type="submit">Tambah</button>
+    </form>
+  </div>
+  {{else}}
+  <p class="redup">Mata kuliah ini tidak memiliki prasyarat.</p>
+  {{end}}
+</div>
+{{end}}
+{{end}}

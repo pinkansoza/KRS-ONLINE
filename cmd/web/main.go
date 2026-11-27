@@ -1,3 +1,5 @@
+// Program utama: hanya menyambung komponen (materi pertemuan 10).
+// Urutan: config -> db -> repository -> service -> handler -> route -> server.
 package main
 
 import (
@@ -7,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // driver mendaftarkan dirinya sebagai "mysql"
 
 	"krs-online/internal/config"
 	"krs-online/internal/handler"
@@ -28,11 +30,20 @@ func main() {
 	}
 	defer db.Close()
 
-	// repository -> service -> handler
+	// --- repository & service ---
 	repo := repository.New(db)
 	authSvc := &service.AuthService{Users: repo.User, Sessions: repo.Session, Notif: repo.Notif}
 	adminSvc := &service.AdminService{R: repo}
+
+	// --- handler ---
 	view := handler.NewRenderer("templates")
+	view.Semester = func(ctx context.Context) string {
+		s, err := repo.Semester.Aktif(ctx)
+		if err != nil {
+			return "-"
+		}
+		return s.Label()
+	}
 	authH := &handler.AuthHandler{Svc: authSvc, View: view, CookieSecure: cfg.CookieSecure}
 	admin := &handler.AdminHandler{Svc: adminSvc, View: view}
 	authMw := &middleware.Auth{Svc: authSvc}
@@ -52,12 +63,42 @@ func main() {
 	privat.HandleFunc("GET /notifikasi", authH.Notifikasi)
 	privat.HandleFunc("POST /notifikasi/dibaca", authH.TandaiDibaca)
 
-	// beranda sementara tiap peran (isinya dibuat di tahap berikutnya)
-	privat.Handle("GET /mhs", M(authH.Profil))
-	privat.Handle("GET /dosen", D(authH.Profil))
-	privat.Handle("GET /admin", A(authH.Profil))
+	// Mahasiswa
+	privat.Handle("GET /mhs", M(authH.Profil)) // beranda sementara; dashboard mahasiswa dibuat di tahap 4
 
-	// Admin: kelola dosen
+	// Dosen wali
+	privat.Handle("GET /dosen", D(authH.Profil)) // beranda sementara; daftar bimbingan dibuat di tahap 5
+
+	// Admin prodi
+	privat.Handle("GET /admin", A(admin.Dashboard))
+	privat.Handle("GET /admin/semester/baru", A(admin.FormSemesterBaru))
+	privat.Handle("POST /admin/semester", A(admin.SimpanSemester))
+	privat.Handle("GET /admin/semester/{id}/edit", A(admin.FormPeriode))
+	privat.Handle("POST /admin/semester/{id}/edit", A(admin.UbahPeriode))
+	privat.Handle("POST /admin/semester/{id}/aktifkan", A(admin.AktifkanSemester))
+
+	privat.Handle("GET /admin/mk", A(admin.DaftarMK))
+	privat.Handle("GET /admin/mk/baru", A(admin.FormMKBaru))
+	privat.Handle("POST /admin/mk", A(admin.SimpanMK))
+	privat.Handle("GET /admin/mk/{id}", A(admin.DetailMK))
+	privat.Handle("GET /admin/mk/{id}/edit", A(admin.FormEditMK))
+	privat.Handle("POST /admin/mk/{id}/edit", A(admin.UbahMK))
+	privat.Handle("POST /admin/mk/{id}/aktif", A(admin.AktifMK))
+	privat.Handle("POST /admin/mk/{id}/grup", A(admin.TambahGrup))
+	privat.Handle("POST /admin/mk/{id}/grup/{grup}/hapus", A(admin.HapusGrup))
+	privat.Handle("POST /admin/mk/{id}/grup/{grup}/butir", A(admin.TambahButir))
+	privat.Handle("POST /admin/mk/{id}/butir/{butir}/hapus", A(admin.HapusButir))
+	privat.Handle("POST /admin/kurikulum", A(admin.TambahKurikulum))
+	privat.Handle("GET /admin/kesetaraan", A(admin.Kesetaraan))
+	privat.Handle("POST /admin/kesetaraan", A(admin.TambahKesetaraan))
+	privat.Handle("POST /admin/kesetaraan/{id}/hapus", A(admin.HapusKesetaraan))
+
+	privat.Handle("GET /admin/mahasiswa", A(admin.DaftarMhs))
+	privat.Handle("GET /admin/mahasiswa/baru", A(admin.FormMhsBaru))
+	privat.Handle("POST /admin/mahasiswa", A(admin.SimpanMhs))
+	privat.Handle("GET /admin/mahasiswa/{id}/edit", A(admin.FormEditMhs))
+	privat.Handle("POST /admin/mahasiswa/{id}/edit", A(admin.UbahMhs))
+
 	privat.Handle("GET /admin/dosen", A(admin.DaftarDosen))
 	privat.Handle("GET /admin/dosen/baru", A(admin.FormDosenBaru))
 	privat.Handle("POST /admin/dosen", A(admin.SimpanDosen))
@@ -78,10 +119,12 @@ func main() {
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	log.Printf("server jalan di http://localhost%s/login", cfg.Addr)
+	log.Printf("server jalan di http://localhost%s", cfg.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
 
+// bukaDB membuat satu connection pool untuk seluruh aplikasi dan
+// mengecek koneksi saat startup (lebih baik gagal sekarang daripada saat user datang).
 func bukaDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

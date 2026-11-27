@@ -1,0 +1,59 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+    <h1>{{.Judul}}</h1>
+    <a href="/admin" class="btn btn-light">‹ Kembali</a>
+</div>
+<div class="kartu">
+    <form method="post" action="{{.Action}}">
+        {{template "csrf" $}}
+        {{if .Baru}}
+        <div class="baris">
+            <div class="form-group"><label for="tahun">Tahun ajaran</label>
+                <input type="text" id="tahun" name="tahun" value="{{.Semester.AcademicYear}}" placeholder="2026/2027"
+                    required>
+                {{with index $e "tahun"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="term">Semester</label>
+                <select id="term" name="term">
+                    <option value="GANJIL" {{if eq .Semester.Term "GANJIL" }}selected{{end}}>Ganjil</option>
+                    <option value="GENAP" {{if eq .Semester.Term "GENAP" }}selected{{end}}>Genap</option>
+                </select>
+                {{with index $e "term"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <p class="redup kecil">Periode bisa diatur setelah semester dibuat.</p>
+        {{else}}
+        {{with .Semester}}
+        <h3>Pengisian KRS</h3>
+        <div class="baris">
+            <div class="form-group"><label for="krs_start">Mulai</label><input type="datetime-local" id="krs_start"
+                    name="krs_start" value="{{tglInput .KRSStart}}"></div>
+            <div class="form-group"><label for="krs_end">Selesai</label><input type="datetime-local" id="krs_end"
+                    name="krs_end" value="{{tglInput .KRSEnd}}"></div>
+        </div>
+        {{with index $e "krs"}}<span class="err">{{.}}</span>{{end}}
+        <h3>Persetujuan dosen wali</h3>
+        <div class="baris">
+            <div class="form-group"><label for="approval_start">Mulai</label><input type="datetime-local"
+                    id="approval_start" name="approval_start" value="{{tglInput .ApprovalStart}}"></div>
+            <div class="form-group"><label for="approval_end">Selesai</label><input type="datetime-local"
+                    id="approval_end" name="approval_end" value="{{tglInput .ApprovalEnd}}"></div>
+        </div>
+        {{with index $e "approval"}}<span class="err">{{.}}</span>{{end}}
+        <h3>Masa perubahan KRS (minggu pertama kuliah)</h3>
+        <div class="baris">
+            <div class="form-group"><label for="change_start">Mulai</label><input type="datetime-local"
+                    id="change_start" name="change_start" value="{{tglInput .ChangeStart}}"></div>
+            <div class="form-group"><label for="change_end">Selesai</label><input type="datetime-local" id="change_end"
+                    name="change_end" value="{{tglInput .ChangeEnd}}"></div>
+        </div>
+        {{with index $e "change"}}<span class="err">{{.}}</span>{{end}}
+        {{end}}
+        {{end}}
+        <div class="form-actions"><button class="btn" type="submit">Simpan</button></div>
+    </form>
+</div>
+{{end}}
+{{end}}
