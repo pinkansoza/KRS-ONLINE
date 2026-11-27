@@ -1,0 +1,77 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala"><div><h1>Input nilai</h1><span class="redup">Riwayat menyimpan semua percobaan; nilai efektif per MK = nilai terbaik.</span></div></div>
+
+<form class="filter" method="get" action="/admin/nilai">
+  <select name="mahasiswa">
+    <option value="0">— pilih mahasiswa —</option>
+    {{range .Mhs}}<option value="{{.ID}}" {{if eq .ID $.Data.Dipilih.ID}}selected{{end}}>{{.NIM}} · {{.Name}}</option>{{end}}
+  </select>
+  <button class="btn btn-light" type="submit">Tampilkan</button>
+</form>
+
+{{with .Impor}}
+<div class="alert {{if .Gagal}}kuning{{else}}ok{{end}}">
+  Impor selesai: <b>{{.Berhasil}}</b> baris tersimpan{{if .Gagal}}, <b>{{len .Gagal}}</b> baris gagal:{{end}}
+  {{if .Gagal}}<ul>{{range .Gagal}}<li>{{.}}</li>{{end}}</ul>{{end}}
+</div>
+{{end}}
+
+<div class="grid-2">
+  <div class="kartu">
+    <h2>Simpan nilai</h2>
+    <form method="post" action="/admin/nilai">
+      {{template "csrf" $}}
+      <div class="form-group"><label for="student_id">Mahasiswa</label>
+        <select id="student_id" name="student_id"><option value="0">— pilih —</option>
+          {{range .Mhs}}<option value="{{.ID}}" {{if or (eq .ID $.Data.Dipilih.ID) (eq .ID $.Data.Form.StudentID)}}selected{{end}}>{{.NIM}} · {{.Name}}</option>{{end}}</select>
+        {{with index $e "student"}}<span class="err">{{.}}</span>{{end}}</div>
+      <div class="form-group"><label for="course_id">Mata kuliah</label>
+        <select id="course_id" name="course_id"><option value="0">— pilih —</option>
+          {{range .MK}}<option value="{{.ID}}" {{if eq .ID $.Data.Form.CourseID}}selected{{end}}>{{.Code}} {{.Name}} ({{.CurriculumName}})</option>{{end}}</select>
+        {{with index $e "course"}}<span class="err">{{.}}</span>{{end}}</div>
+      <div class="baris">
+        <div class="form-group"><label for="semester_id">Semester</label>
+          <select id="semester_id" name="semester_id"><option value="0">— pilih —</option>
+            {{range .Semester}}<option value="{{.ID}}" {{if eq .ID $.Data.Form.SemesterID}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+          {{with index $e "semester"}}<span class="err">{{.}}</span>{{end}}</div>
+        <div class="form-group"><label for="letter">Nilai</label>
+          <select id="letter" name="letter"><option value="">—</option>
+            {{range .Skala}}<option value="{{.Letter}}" {{if eq .Letter $.Data.Form.Letter}}selected{{end}}>{{.Letter}} ({{koma .Point}})</option>{{end}}</select>
+          {{with index $e "letter"}}<span class="err">{{.}}</span>{{end}}</div>
+      </div>
+      <p class="redup kecil">Jika mahasiswa sudah punya nilai MK tersebut di semester yang sama, nilainya diperbarui.</p>
+      <button class="btn" type="submit">Simpan nilai</button>
+    </form>
+  </div>
+
+  <div class="kartu">
+    <h2>Impor CSV</h2>
+    {{/* form upload file wajib memakai enctype multipart/form-data */}}
+    <form method="post" action="/admin/nilai/impor" enctype="multipart/form-data">
+      {{template "csrf" $}}
+      <div class="form-group"><label for="file">File CSV</label><input type="file" id="file" name="file" accept=".csv,text/csv" required></div>
+      <button class="btn btn-light" type="submit">Impor</button>
+    </form>
+    <p class="redup kecil">Format kolom (baris header opsional):</p>
+    <pre class="kecil">nim,kode_mk,tahun_ajaran,term,nilai
+2404130001,IF502,2025/2026,GENAP,A</pre>
+  </div>
+</div>
+
+{{if .Dipilih.ID}}
+<div class="kartu">
+  <h2>Riwayat nilai {{.Dipilih.Name}} <small class="redup">{{.Dipilih.NIM}}</small></h2>
+  <div class="tabel"><table>
+    <tr><th>Semester</th><th>Kode</th><th>Mata kuliah</th><th class="angka">SKS</th><th>Nilai</th><th class="angka">Bobot</th><th></th></tr>
+    {{range .Riwayat}}
+    <tr><td>{{.SemesterLabel}}</td><td>{{.CourseCode}}</td><td>{{.CourseName}}</td><td class="angka">{{.Credits}}</td><td><b>{{.Letter}}</b></td><td class="angka">{{koma .Point}}</td>
+      <td><form method="post" action="/admin/nilai/{{.ID}}/hapus" class="inline" data-confirm="Hapus nilai {{.CourseCode}} {{.SemesterLabel}}?">
+        {{template "csrf" $}}<input type="hidden" name="student_id" value="{{.StudentID}}"><button class="btn btn-sm btn-merah">Hapus</button></form></td></tr>
+    {{else}}<tr><td colspan="7" class="redup">Belum ada nilai.</td></tr>{{end}}
+  </table></div>
+</div>
+{{end}}
+{{end}}
+{{end}}

@@ -1,0 +1,22 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div><h1>Kelas, jadwal &amp; kuota</h1><span class="redup">{{len .Kelas}} kelas</span></div>
+  <div class="aksi"><a class="btn" href="/admin/kelas/baru?semester={{.SemID}}">+ Buka kelas</a></div>
+</div>
+<form class="filter" method="get" action="/admin/kelas">
+  <select name="semester">{{range .Semester}}<option value="{{.ID}}" {{if eq .ID $.Data.SemID}}selected{{end}}>{{.Label}}{{if .IsActive}} (aktif){{end}}</option>{{end}}</select>
+  <input type="search" name="q" value="{{.Q}}" placeholder="Cari MK / dosen…">
+  <button class="btn btn-light" type="submit">Tampilkan</button>
+</form>
+<div class="tabel"><table>
+  <tr><th>Kode</th><th>Mata kuliah</th><th>Kelas</th><th>Dosen</th><th>Jadwal</th><th class="angka">Terisi / kuota</th><th class="angka">Antre</th><th></th></tr>
+  {{range .Kelas}}
+  <tr><td>{{.CourseCode}}</td><td>{{.CourseName}}</td><td>{{.Code}}</td><td>{{.LecturerName}}</td>
+    <td class="kecil">{{jadwal .Schedules}}</td>
+    <td class="angka {{if .Penuh}}penuh{{end}}">{{.Enrolled}} / {{.Quota}}</td><td class="angka">{{.Waitlist}}</td>
+    <td><a class="btn btn-sm btn-light" href="/admin/kelas/{{.ID}}">Kelola</a></td></tr>
+  {{else}}<tr><td colspan="8" class="redup">Belum ada kelas di semester ini.</td></tr>{{end}}
+</table></div>
+{{end}}
+{{end}}

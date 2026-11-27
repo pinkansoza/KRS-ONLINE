@@ -1,0 +1,45 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+  <h1>{{.Judul}}</h1>
+  <a href="{{if .Baru}}/admin/kelas{{else}}/admin/kelas/{{.Kelas.ID}}{{end}}" class="btn btn-light">‹ Kembali</a>
+</div>
+<div class="kartu">
+<form method="post" action="{{.Action}}">
+  {{template "csrf" $}}
+  {{if .Baru}}
+  <div class="baris">
+    <div class="form-group"><label for="semester_id">Semester</label>
+      <select id="semester_id" name="semester_id"><option value="0">— pilih —</option>
+        {{range .Semester}}<option value="{{.ID}}" {{if or (eq .ID $.Data.Kelas.SemesterID) (and (eq $.Data.Kelas.SemesterID 0) .IsActive)}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+      {{with index $e "semester"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="course_id">Mata kuliah</label>
+      <select id="course_id" name="course_id"><option value="0">— pilih —</option>
+        {{range .MK}}<option value="{{.ID}}" {{if eq .ID $.Data.Kelas.CourseID}}selected{{end}}>{{.Code}} {{.Name}}</option>{{end}}</select>
+      {{with index $e "course"}}<span class="err">{{.}}</span>{{end}}</div>
+  </div>
+  {{else}}
+  <p><b>{{.Kelas.CourseCode}} {{.Kelas.CourseName}}</b> · peserta saat ini {{.Kelas.Enrolled}}</p>
+  {{end}}
+  <div class="baris">
+    <div class="form-group"><label for="class_code">Kode kelas</label>
+      <input type="text" id="class_code" name="class_code" value="{{.Kelas.Code}}" maxlength="5" required>
+      {{with index $e "code"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="quota">Kuota</label>
+      <input type="number" id="quota" name="quota" value="{{.Kelas.Quota}}" min="1" max="500" required>
+      {{with index $e "quota"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="room">Ruang default</label>
+      <input type="text" id="room" name="room" value="{{.Kelas.Room}}" maxlength="30">
+      {{with index $e "room"}}<span class="err">{{.}}</span>{{end}}</div>
+  </div>
+  <div class="form-group"><label for="lecturer_id">Dosen pengampu</label>
+    <select id="lecturer_id" name="lecturer_id"><option value="0">— pilih —</option>
+      {{range .Dosen}}<option value="{{.ID}}" {{if eq .ID $.Data.Kelas.LecturerID}}selected{{end}}>{{.Name}}</option>{{end}}</select>
+    {{with index $e "lecturer"}}<span class="err">{{.}}</span>{{end}}</div>
+  <p class="redup kecil">Kuota tidak boleh diturunkan di bawah jumlah peserta. Jika kuota dinaikkan, kursi baru otomatis diisi dari daftar tunggu.</p>
+  <div class="form-actions"><button class="btn" type="submit">Simpan</button></div>
+</form>
+</div>
+{{end}}
+{{end}}

@@ -1,3 +1,5 @@
+// Package handler: urusan HTTP. Membaca r, memanggil service, lalu menulis
+// response / redirect / render template. Tidak ada SQL di sini.
 package handler
 
 import (
@@ -46,7 +48,21 @@ func koma(f float64) string {
 	return strings.Replace(fmt.Sprintf("%.2f", f), ".", ",", 1)
 }
 
-// badge memilih kelas CSS untuk status.
+func jadwal(s []model.Schedule) string {
+	if len(s) == 0 {
+		return "belum dijadwalkan"
+	}
+	parts := make([]string, len(s))
+	for i, j := range s {
+		parts[i] = fmt.Sprintf("%s %s–%s", service.NamaHari(j.Day), j.Start, j.End)
+		if j.Room != "" {
+			parts[i] += " · " + j.Room
+		}
+	}
+	return strings.Join(parts, "; ")
+}
+
+// badge memilih kelas CSS untuk status (warna mengikuti keterangan wireframe).
 func badge(status string) string {
 	switch status {
 	case "OK", "AKTIF", "DISETUJUI", "PROMOTED", "DIPROMOSIKAN", "APPROVE", "APPROVE_ADD", "APPROVE_DROP", "BERJALAN":
@@ -96,7 +112,7 @@ func persen(a, b int) int {
 
 var funcs = template.FuncMap{
 	"add_one": addOne, "tanggal": tanggal, "tanggalPendek": tanggalPendek, "tglInput": tglInput,
-	"koma": koma, "badge": badge, "label": label, "hari": service.NamaHari,
+	"koma": koma, "jadwal": jadwal, "badge": badge, "label": label, "hari": service.NamaHari,
 	"persen": persen, "lower": strings.ToLower,
 	"kali":       func(a int, b float64) float64 { return float64(a) * b },
 	"status_mhs": func() []string { return []string{"AKTIF", "CUTI", "LULUS", "NONAKTIF"} },
@@ -122,14 +138,17 @@ type Renderer struct {
 // kerangka = file yang selalu ikut di-parse bersama setiap halaman.
 var kerangka = map[string]bool{"layout.html": true, "header.html": true, "sidebar.html": true, "footer.html": true}
 
-// NewRenderer mem-parse semua halaman sekali saat server menyala.
+// NewRenderer mem-parse semua halaman sekali saat server menyala (template.Must:
+// kalau ada salah tulis template, program langsung berhenti).
+// Halaman = setiap file .html di folder templates (dan subfolder-nya) selain
+// kerangka, jadi halaman baru di tahap berikutnya cukup ditambahkan filenya.
 func NewRenderer(dir string) *Renderer {
 	rd := &Renderer{tpl: make(map[string]*template.Template)}
 	atas, _ := filepath.Glob(filepath.Join(dir, "*.html"))
 	sub, _ := filepath.Glob(filepath.Join(dir, "*", "*.html"))
 	for _, path := range append(atas, sub...) {
 		file, _ := filepath.Rel(dir, path)
-		file = filepath.ToSlash(file) // kunci selalu "auth/login.html", juga di Windows
+		file = filepath.ToSlash(file) // kunci selalu "mhs/katalog.html", juga di Windows
 		if kerangka[file] {
 			continue
 		}
@@ -145,7 +164,7 @@ func NewRenderer(dir string) *Renderer {
 }
 
 // Tampil me-render ke buffer dulu supaya error template tidak menghasilkan
-// halaman setengah jadi.
+// halaman setengah jadi. Urutan: header -> status -> body.
 func (rd *Renderer) Tampil(w http.ResponseWriter, r *http.Request, status int, file string, h Halaman) {
 	if u, ok := middleware.UserDari(r.Context()); ok {
 		h.User = u
@@ -174,7 +193,7 @@ func (rd *Renderer) Tampil(w http.ResponseWriter, r *http.Request, status int, f
 }
 
 // pesanFlash: kode dari query string diterjemahkan lewat map, bukan teks
-// bebas dari URL.
+// bebas dari URL (materi CRUD bagian 2).
 var pesanFlash = map[string]string{
 	"dibuat":     "Data berhasil disimpan.",
 	"diubah":     "Perubahan berhasil disimpan.",

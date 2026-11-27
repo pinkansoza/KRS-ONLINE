@@ -14,6 +14,8 @@ type Repos struct {
 	Session  *SessionRepo
 	Semester *SemesterRepo
 	Course   *CourseRepo
+	Class    *ClassRepo
+	Grade    *GradeRepo
 	Student  *StudentRepo
 	Lecturer *LecturerRepo
 	Notif    *NotifRepo
@@ -25,6 +27,8 @@ func bangun(q DBTX) *Repos {
 		Session:  &SessionRepo{DB: q},
 		Semester: &SemesterRepo{DB: q},
 		Course:   &CourseRepo{DB: q},
+		Class:    &ClassRepo{DB: q},
+		Grade:    &GradeRepo{DB: q},
 		Student:  &StudentRepo{DB: q},
 		Lecturer: &LecturerRepo{DB: q},
 		Notif:    &NotifRepo{DB: q},

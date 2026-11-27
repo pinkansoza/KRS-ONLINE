@@ -33,6 +33,7 @@ func main() {
 	// --- repository & service ---
 	repo := repository.New(db)
 	authSvc := &service.AuthService{Users: repo.User, Sessions: repo.Session, Notif: repo.Notif}
+	krsSvc := &service.KRSService{R: repo, SKSBaru: cfg.SKSBaru}
 	adminSvc := &service.AdminService{R: repo}
 
 	// --- handler ---
@@ -45,6 +46,7 @@ func main() {
 		return s.Label()
 	}
 	authH := &handler.AuthHandler{Svc: authSvc, View: view, CookieSecure: cfg.CookieSecure}
+	mhs := &handler.MahasiswaHandler{Svc: krsSvc, View: view}
 	admin := &handler.AdminHandler{Svc: adminSvc, View: view}
 	authMw := &middleware.Auth{Svc: authSvc}
 
@@ -65,6 +67,7 @@ func main() {
 
 	// Mahasiswa
 	privat.Handle("GET /mhs", M(authH.Profil)) // beranda sementara; dashboard mahasiswa dibuat di tahap 4
+	privat.Handle("GET /mhs/transkrip", M(mhs.Transkrip))
 
 	// Dosen wali
 	privat.Handle("GET /dosen", D(authH.Profil)) // beranda sementara; daftar bimbingan dibuat di tahap 5
@@ -93,6 +96,16 @@ func main() {
 	privat.Handle("POST /admin/kesetaraan", A(admin.TambahKesetaraan))
 	privat.Handle("POST /admin/kesetaraan/{id}/hapus", A(admin.HapusKesetaraan))
 
+	privat.Handle("GET /admin/kelas", A(admin.DaftarKelas))
+	privat.Handle("GET /admin/kelas/baru", A(admin.FormKelasBaru))
+	privat.Handle("POST /admin/kelas", A(admin.SimpanKelas))
+	privat.Handle("GET /admin/kelas/{id}", A(admin.DetailKelas))
+	privat.Handle("GET /admin/kelas/{id}/edit", A(admin.FormEditKelas))
+	privat.Handle("POST /admin/kelas/{id}/edit", A(admin.UbahKelas))
+	privat.Handle("POST /admin/kelas/{id}/hapus", A(admin.HapusKelas))
+	privat.Handle("POST /admin/kelas/{id}/jadwal", A(admin.TambahJadwal))
+	privat.Handle("POST /admin/kelas/{id}/jadwal/{jadwal}/hapus", A(admin.HapusJadwal))
+
 	privat.Handle("GET /admin/mahasiswa", A(admin.DaftarMhs))
 	privat.Handle("GET /admin/mahasiswa/baru", A(admin.FormMhsBaru))
 	privat.Handle("POST /admin/mahasiswa", A(admin.SimpanMhs))
@@ -102,6 +115,11 @@ func main() {
 	privat.Handle("GET /admin/dosen", A(admin.DaftarDosen))
 	privat.Handle("GET /admin/dosen/baru", A(admin.FormDosenBaru))
 	privat.Handle("POST /admin/dosen", A(admin.SimpanDosen))
+
+	privat.Handle("GET /admin/nilai", A(admin.Nilai))
+	privat.Handle("POST /admin/nilai", A(admin.SimpanNilai))
+	privat.Handle("POST /admin/nilai/{id}/hapus", A(admin.HapusNilai))
+	privat.Handle("POST /admin/nilai/impor", A(admin.ImporNilai))
 
 	// publik: boleh diakses tanpa login
 	mux := http.NewServeMux()
