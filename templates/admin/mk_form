@@ -1,0 +1,48 @@
+{{define "content"}}
+{{/* satu template form untuk tambah dan edit (materi CRUD bagian 2) */}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+    <h1>{{.Judul}}</h1>
+    <a href="/admin/mk" class="btn btn-light">‹ Kembali</a>
+</div>
+<div class="kartu">
+    <form method="post" action="{{.Action}}">
+        {{template "csrf" $}}
+        <div class="baris">
+            <div class="form-group"><label for="code">Kode</label>
+                <input type="text" id="code" name="code" value="{{.MK.Code}}" maxlength="20" placeholder="IF501"
+                    required>
+                {{with index $e "code"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="credits">SKS</label>
+                <input type="number" id="credits" name="credits" value="{{.MK.Credits}}" min="1" max="10" required>
+                {{with index $e "credits"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <div class="form-group"><label for="name">Nama mata kuliah</label>
+            <input type="text" id="name" name="name" value="{{.MK.Name}}" maxlength="150" required>
+            {{with index $e "name"}}<span class="err">{{.}}</span>{{end}}
+        </div>
+        <div class="baris">
+            <div class="form-group"><label for="curriculum_id">Kurikulum</label>
+                <select id="curriculum_id" name="curriculum_id">
+                    <option value="0">— pilih —</option>
+                    {{range .Kurikulum}}<option value="{{.ID}}" {{if eq .ID $.Data.MK.CurriculumID}}selected{{end}}>
+                        {{.Name}}</option>{{end}}
+                </select>
+                {{with index $e "curriculum"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="recommended_semester">Semester anjuran</label>
+                <input type="number" id="recommended_semester" name="recommended_semester"
+                    value="{{if .MK.RecommendedSemester}}{{.MK.RecommendedSemester}}{{end}}" min="1" max="14">
+                {{with index $e "semester"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <label class="cek"><input type="checkbox" name="is_active" value="1" {{if .MK.IsActive}}checked{{end}}> Aktif
+            (bisa dibuka kelasnya)</label>
+        <div class="form-actions"><button class="btn" type="submit">Simpan</button></div>
+    </form>
+</div>
+{{end}}
+{{end}}

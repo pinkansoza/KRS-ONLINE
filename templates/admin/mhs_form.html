@@ -1,0 +1,68 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+    <h1>{{.Judul}}</h1>
+    <a href="/admin/mahasiswa" class="btn btn-light">‹ Kembali</a>
+</div>
+<div class="kartu">
+    <form method="post" action="{{.Action}}">
+        {{template "csrf" $}}
+        <div class="baris">
+            <div class="form-group"><label for="nim">NIM</label>
+                <input type="text" id="nim" name="nim" value="{{.Mhs.NIM}}" maxlength="20" {{if
+                    .Baru}}required{{else}}disabled{{end}}>
+                {{with index $e "nim"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="entry_year">Tahun masuk</label>
+                <input type="number" id="entry_year" name="entry_year" value="{{.Mhs.EntryYear}}" min="2000" max="2100"
+                    required>
+                {{with index $e "entry"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <div class="form-group"><label for="name">Nama lengkap</label>
+            <input type="text" id="name" name="name" value="{{.Mhs.Name}}" maxlength="150" required>
+            {{with index $e "name"}}<span class="err">{{.}}</span>{{end}}
+        </div>
+        <div class="baris">
+            <div class="form-group"><label for="email">Email (untuk login)</label>
+                <input type="email" id="email" name="email" value="{{.Mhs.Email}}" maxlength="150" required>
+                {{with index $e "email"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="password">{{if .Baru}}Password awal{{else}}Reset password (kosongkan
+                    jika tidak diubah){{end}}</label>
+                <input type="password" id="password" name="password" minlength="8" maxlength="72" {{if
+                    .Baru}}required{{end}}>
+                {{with index $e "password"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <div class="baris">
+            <div class="form-group"><label for="curriculum_id">Kurikulum</label>
+                <select id="curriculum_id" name="curriculum_id">
+                    <option value="0">— pilih —</option>
+                    {{range .Kurikulum}}<option value="{{.ID}}" {{if eq .ID $.Data.Mhs.CurriculumID}}selected{{end}}>
+                        {{.Name}}</option>{{end}}
+                </select>
+                {{with index $e "curriculum"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+            <div class="form-group"><label for="advisor_id">Dosen wali</label>
+                <select id="advisor_id" name="advisor_id">
+                    <option value="0">— belum ada —</option>
+                    {{range .Dosen}}<option value="{{.ID}}" {{if eq .ID $.Data.Mhs.AdvisorID}}selected{{end}}>{{.Name}}
+                    </option>{{end}}
+                </select>
+            </div>
+            <div class="form-group"><label for="status">Status</label>
+                <select id="status" name="status">
+                    {{range $s := status_mhs}}<option value="{{$s}}" {{if eq $s $.Data.Mhs.Status}}selected{{end}}>
+                        {{$s}}</option>{{end}}</select>
+                {{with index $e "status"}}<span class="err">{{.}}</span>{{end}}
+            </div>
+        </div>
+        <p class="redup kecil">Password disimpan sebagai hash bcrypt. Status LULUS/NONAKTIF menonaktifkan akun login.
+        </p>
+        <div class="form-actions"><button class="btn" type="submit">Simpan</button></div>
+    </form>
+</div>
+{{end}}
+{{end}}
