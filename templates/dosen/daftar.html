@@ -1,0 +1,33 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div><h1>{{if eq .Status "PERUBAHAN"}}Permintaan perubahan KRS{{else}}KRS mahasiswa bimbingan{{end}}</h1>
+    <span class="redup">{{.Semester.Label}} · {{if .MasaSetuju}}periode persetujuan dibuka{{else}}di luar periode persetujuan{{end}}</span></div>
+</div>
+<div class="tab">
+  <a href="/dosen" {{if eq .Status ""}}class="aktif"{{end}}>Semua ({{index .Hitung ""}})</a>
+  <a href="/dosen?status=DIAJUKAN" {{if eq .Status "DIAJUKAN"}}class="aktif"{{end}}>Diajukan ({{index .Hitung "DIAJUKAN"}})</a>
+  <a href="/dosen?status=DRAFT" {{if eq .Status "DRAFT"}}class="aktif"{{end}}>Draft ({{index .Hitung "DRAFT"}})</a>
+  <a href="/dosen?status=DISETUJUI" {{if eq .Status "DISETUJUI"}}class="aktif"{{end}}>Disetujui ({{index .Hitung "DISETUJUI"}})</a>
+  <a href="/dosen?status=BELUM" {{if eq .Status "BELUM"}}class="aktif"{{end}}>Belum mengisi ({{index .Hitung "BELUM"}})</a>
+  <a href="/dosen?status=PERUBAHAN" {{if eq .Status "PERUBAHAN"}}class="aktif"{{end}}>Permintaan perubahan ({{index .Hitung "PERUBAHAN"}})</a>
+</div>
+<div class="tabel"><table>
+  <tr><th>NIM</th><th>Nama</th><th>Status KRS</th><th class="angka">Kelas</th><th class="angka">SKS / batas</th><th class="angka">IPS acuan</th><th>Diajukan</th><th></th></tr>
+  {{range .KRS}}
+  <tr>
+    <td>{{.Student.NIM}}</td><td>{{.Student.Name}}</td>
+    <td><span class="badge {{badge .Status}}">{{label .Status}}</span>{{if .PermintaanCt}} <span class="badge kuning">{{.PermintaanCt}} permintaan</span>{{end}}</td>
+    <td class="angka">{{.JumlahKelas}}</td>
+    <td class="angka">{{if .ID}}{{.TotalSKS}} / {{.MaxCredits}}{{else}}–{{end}}</td>
+    <td class="angka">{{if .AdaIPS}}{{koma .IPSRef}}{{else}}–{{end}}</td>
+    <td class="kecil">{{tanggal .SubmittedAt}}</td>
+    <td>{{if .ID}}<a class="btn btn-sm {{if ne .Status "DIAJUKAN"}}btn-light{{end}}" href="/dosen/krs/{{.ID}}">{{if eq .Status "DIAJUKAN"}}Periksa{{else}}Lihat{{end}}</a>{{end}}
+        <a class="btn btn-sm btn-light" href="/dosen/mahasiswa/{{.StudentID}}">Transkrip</a></td>
+  </tr>
+  {{else}}
+  <tr><td colspan="8" class="redup">Tidak ada data untuk filter ini.</td></tr>
+  {{end}}
+</table></div>
+{{end}}
+{{end}}
