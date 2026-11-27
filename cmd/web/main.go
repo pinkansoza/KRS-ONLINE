@@ -66,7 +66,12 @@ func main() {
 	privat.HandleFunc("POST /notifikasi/dibaca", authH.TandaiDibaca)
 
 	// Mahasiswa
-	privat.Handle("GET /mhs", M(authH.Profil)) // beranda sementara; dashboard mahasiswa dibuat di tahap 4
+	privat.Handle("GET /mhs", M(mhs.Dashboard))
+	privat.Handle("GET /mhs/katalog", M(mhs.Katalog))
+	privat.Handle("GET /mhs/krs", M(mhs.KRS))
+	privat.Handle("POST /mhs/krs/tambah", M(mhs.Tambah))
+	privat.Handle("POST /mhs/krs/ajukan", M(mhs.Ajukan))
+	privat.Handle("POST /mhs/krs/item/{id}/batal", M(mhs.Batal))
 	privat.Handle("GET /mhs/transkrip", M(mhs.Transkrip))
 
 	// Dosen wali

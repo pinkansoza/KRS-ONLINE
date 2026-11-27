@@ -1,0 +1,79 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div>
+    <h1>KRS Saya <span class="badge {{badge .KRS.Status}}">{{.KRS.Status}}</span></h1>
+    <span class="redup">{{.Semester.Label}} · {{.Mhs.Name}} ({{.Mhs.NIM}}) · Dosen wali {{.Mhs.AdvisorName}}</span>
+  </div>
+  <div class="aksi">
+    {{if eq .Mode "ISI"}}<a class="btn btn-light" href="/mhs/katalog">+ Tambah kelas</a>{{end}}
+    {{if eq .Mode "UBAH"}}<a class="btn btn-light" href="/mhs/katalog">+ Minta tambah kelas</a>{{end}}
+    {{if and (eq .Mode "ISI") .Items}}
+    <form method="post" action="/mhs/krs/ajukan" class="inline" data-confirm="Ajukan KRS ke dosen wali? Setelah diajukan KRS tidak bisa diubah sampai ada keputusan.">
+      {{template "csrf" $}}
+      <button class="btn" type="submit">Ajukan ke dosen wali</button>
+    </form>
+    {{end}}
+  </div>
+</div>
+
+{{with .ModeErr}}<div class="alert info">{{.}}</div>{{end}}
+{{if eq .Mode "UBAH"}}<div class="alert kuning">Masa perubahan KRS dibuka. Tambah atau batal kelas akan diajukan ke dosen wali per permintaan (kursi tetap dipesan selama menunggu).</div>{{end}}
+{{with .Masalah}}<div class="alert galat"><b>Validasi ulang menemukan masalah:</b> {{.}}</div>{{end}}
+
+<div class="grid">
+  <div class="stat"><div class="judul">Total SKS</div><div class="angka">{{.TotalSKS}} <small>/ {{.KRS.MaxCredits}}</small></div>
+    <div class="bar"><span class="p{{persen .TotalSKS .KRS.MaxCredits}}"></span></div></div>
+  <div class="stat"><div class="judul">IPS acuan</div><div class="angka">{{if .KRS.AdaIPS}}{{koma .KRS.IPSRef}}{{else}}—{{end}}</div>
+    <small>{{if .KRS.AdaIPS}}{{.Batas.Label}}{{else}}mahasiswa baru (aturan default){{end}}</small></div>
+  <div class="stat"><div class="judul">Diajukan</div><div class="angka kecil">{{tanggal .KRS.SubmittedAt}}</div></div>
+  <div class="stat"><div class="judul">Disetujui</div><div class="angka kecil">{{tanggal .KRS.ApprovedAt}}</div></div>
+</div>
+
+<div class="tabel"><table>
+  <tr><th>Kode</th><th>Mata kuliah</th><th>Kelas</th><th>Dosen</th><th>Jadwal</th><th class="angka">SKS</th><th>Status</th><th></th></tr>
+  {{range .Items}}
+  <tr>
+    <td>{{.Class.CourseCode}}</td><td>{{.Class.CourseName}}</td><td>{{.Class.Code}}</td><td>{{.Class.LecturerName}}</td>
+    <td class="kecil">{{jadwal .Class.Schedules}}</td><td class="angka">{{.Class.Credits}}</td>
+    <td><span class="badge {{badge .Status}}">{{label .Status}}</span></td>
+    <td>
+      {{if eq $.Data.Mode "ISI"}}
+        <form method="post" action="/mhs/krs/item/{{.ID}}/batal" class="inline" data-confirm="Hapus {{.Class.CourseName}} dari KRS? Kursi akan dilepas.">
+          {{template "csrf" $}}<button class="btn btn-sm btn-merah">Hapus</button></form>
+      {{else if eq $.Data.Mode "UBAH"}}
+        {{if eq .Status "AKTIF"}}
+        <form method="post" action="/mhs/krs/item/{{.ID}}/batal" class="inline" data-confirm="Ajukan pembatalan {{.Class.CourseName}} ke dosen wali?">
+          {{template "csrf" $}}<button class="btn btn-sm btn-merah">Minta batal</button></form>
+        {{else}}
+        <form method="post" action="/mhs/krs/item/{{.ID}}/batal" class="inline">
+          {{template "csrf" $}}<button class="btn btn-sm btn-light">Tarik permintaan</button></form>
+        {{end}}
+      {{end}}
+    </td>
+  </tr>
+  {{else}}
+  <tr><td colspan="8" class="redup">KRS masih kosong.</td></tr>
+  {{end}}
+</table></div>
+
+<div class="grid-2">
+  <div class="kartu">
+    <h3>Riwayat persetujuan</h3>
+    <ul class="daftar">
+      {{range .Log}}
+      <li><span class="badge {{badge .Action}}">{{label .Action}}</span> {{.ActorName}}{{with .ItemLabel}} · {{.}}{{end}}
+        <br><small>{{tanggal .CreatedAt}}</small>{{with .Note}}<br><i>“{{.}}”</i>{{end}}</li>
+      {{else}}<li class="redup">Belum ada riwayat.</li>{{end}}
+    </ul>
+  </div>
+  <div class="kartu">
+    <h3>Kelas yang dibatalkan</h3>
+    <ul class="daftar">
+      {{range .Riwayat}}<li class="redup">{{.Class.CourseCode}} {{.Class.CourseName}} kelas {{.Class.Code}} <small>· ditambahkan {{tanggal .AddedAt}}</small></li>
+      {{else}}<li class="redup">Tidak ada.</li>{{end}}
+    </ul>
+  </div>
+</div>
+{{end}}
+{{end}}

@@ -18,6 +18,7 @@ type Repos struct {
 	Grade    *GradeRepo
 	Student  *StudentRepo
 	Lecturer *LecturerRepo
+	KRS      *KRSRepo
 	Notif    *NotifRepo
 }
 
@@ -31,6 +32,7 @@ func bangun(q DBTX) *Repos {
 		Grade:    &GradeRepo{DB: q},
 		Student:  &StudentRepo{DB: q},
 		Lecturer: &LecturerRepo{DB: q},
+		KRS:      &KRSRepo{DB: q},
 		Notif:    &NotifRepo{DB: q},
 	}
 }

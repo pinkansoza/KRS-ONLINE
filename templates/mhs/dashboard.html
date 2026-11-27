@@ -1,0 +1,85 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div>
+    <h1>Halo, {{.Mhs.Name}}!</h1>
+    <span class="redup">{{.Mhs.NIM}} · {{.Mhs.CurriculumName}} · Dosen wali: {{.Mhs.AdvisorName}}</span>
+  </div>
+</div>
+
+{{if .MasaKRS}}
+  <div class="alert info"><b>Periode pengisian KRS dibuka</b> {{tanggal .Semester.KRSStart}} – {{tanggal .Semester.KRSEnd}}. Ajukan KRS sebelum batas waktu.</div>
+{{else if .MasaUbah}}
+  <div class="alert kuning"><b>Masa perubahan KRS</b> {{tanggal .Semester.ChangeStart}} – {{tanggal .Semester.ChangeEnd}}. Tambah/batal kelas diajukan per permintaan ke dosen wali.</div>
+{{else}}
+  <div class="alert info">Periode pengisian KRS sedang tidak dibuka.</div>
+{{end}}
+
+<div class="grid">
+  <div class="stat"><div class="judul">Status KRS</div>
+    <div class="angka"><span class="badge {{badge .KRS.Status}}">{{.KRS.Status}}</span></div>
+    <small>{{if eq .KRS.Status "DRAFT"}}Belum diajukan ke dosen wali{{else if eq .KRS.Status "DIAJUKAN"}}Menunggu persetujuan{{else}}Terkunci{{end}}</small></div>
+  <div class="stat"><div class="judul">SKS diambil</div>
+    <div class="angka">{{.TotalSKS}} <small>/ {{.KRS.MaxCredits}}</small></div>
+    <div class="bar"><span class="p{{persen .TotalSKS .KRS.MaxCredits}}"></span></div></div>
+  <div class="stat"><div class="judul">IPS acuan {{if .Batas.AdaIPS}}({{.Batas.Label}}){{end}}</div>
+    <div class="angka">{{if .Batas.AdaIPS}}{{koma .Batas.IPS}}{{else}}—{{end}}</div>
+    <small>{{if .Batas.AdaIPS}}batas {{.KRS.MaxCredits}} SKS{{else}}mahasiswa baru · batas default {{.KRS.MaxCredits}} SKS{{end}}</small></div>
+  <div class="stat"><div class="judul">IPK</div><div class="angka">{{koma .IPK}}</div>
+    <small><a href="/mhs/transkrip">Lihat transkrip</a></small></div>
+</div>
+
+<div class="langkah">
+  <div class="{{if gt .Langkah 1}}selesai{{else}}kini{{end}}">1 · Isi KRS</div>
+  <div class="{{if gt .Langkah 2}}selesai{{else if eq .Langkah 2}}kini{{end}}">2 · Ajukan ke dosen wali</div>
+  <div class="{{if gt .Langkah 3}}selesai{{else if eq .Langkah 3}}kini{{end}}">3 · Disetujui (terkunci)</div>
+  <div class="{{if eq .Langkah 4}}kini{{end}}">4 · Masa perubahan</div>
+</div>
+
+<div class="grid-2">
+  <div class="kartu">
+    <div class="kepala"><h2>KRS semester ini <small>{{len .Items}} kelas</small></h2>
+      <div class="aksi"><a class="btn btn-sm" href="/mhs/katalog">+ Tambah kelas</a> <a class="btn btn-sm btn-light" href="/mhs/krs">Buka KRS</a></div></div>
+    <div class="tabel"><table>
+      <tr><th>Kode</th><th>Mata kuliah</th><th>Kelas</th><th>Jadwal</th><th class="angka">SKS</th><th>Status</th></tr>
+      {{range .Items}}
+      <tr><td>{{.Class.CourseCode}}</td><td>{{.Class.CourseName}}</td><td>{{.Class.Code}}</td>
+        <td class="kecil">{{jadwal .Class.Schedules}}</td><td class="angka">{{.Class.Credits}}</td>
+        <td><span class="badge {{badge .Status}}">{{label .Status}}</span></td></tr>
+      {{else}}
+      <tr><td colspan="6" class="redup">Belum ada kelas. Mulai dari <a href="/mhs/katalog">katalog kelas</a>.</td></tr>
+      {{end}}
+    </table></div>
+  </div>
+
+  <div>
+    <div class="kartu">
+      <h3>Notifikasi terbaru</h3>
+      <ul class="daftar">
+        {{range .Notif}}<li {{if not .IsRead}}class="baru"{{end}}>{{.Message}}<br><small>{{tanggal .CreatedAt}}</small></li>
+        {{else}}<li class="redup">Belum ada notifikasi.</li>{{end}}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="kartu">
+    <h3>Ketentuan batas SKS (dari IPS semester lalu)</h3>
+    <div class="tabel"><table>
+      <tr><th>IPS semester lalu</th><th>Batas SKS</th></tr>
+      {{range .Aturan}}<tr><td>{{koma .MinIPS}} – {{koma .MaxIPS}}</td><td>{{.MaxSKS}} SKS{{if and $.Data.Batas.AdaIPS (eq .MaxSKS $.Data.KRS.MaxCredits)}} ← berlaku untuk Anda{{end}}</td></tr>{{end}}
+    </table></div>
+  </div>
+  <div class="kartu">
+    <h3>Jadwal periode {{.Semester.Label}}</h3>
+    <div class="tabel"><table>
+      <tr><th>Kegiatan</th><th>Tanggal</th></tr>
+      <tr><td>Pengisian KRS</td><td>{{tanggalPendek .Semester.KRSStart}} – {{tanggalPendek .Semester.KRSEnd}}</td></tr>
+      <tr><td>Persetujuan dosen wali</td><td>{{tanggalPendek .Semester.ApprovalStart}} – {{tanggalPendek .Semester.ApprovalEnd}}</td></tr>
+      <tr><td>Masa perubahan KRS</td><td>{{tanggalPendek .Semester.ChangeStart}} – {{tanggalPendek .Semester.ChangeEnd}}</td></tr>
+    </table></div>
+  </div>
+</div>
+{{end}}
+{{end}}

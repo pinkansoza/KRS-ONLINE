@@ -6,6 +6,9 @@
   </div>
   <ul class="menu">
     {{if .User.IsMahasiswa}}
+      <li><a href="/mhs" {{if eq .Menu "dashboard"}}class="aktif"{{end}}>Dashboard</a></li>
+      <li><a href="/mhs/katalog" {{if eq .Menu "katalog"}}class="aktif"{{end}}>Katalog kelas</a></li>
+      <li><a href="/mhs/krs" {{if eq .Menu "krs"}}class="aktif"{{end}}>KRS Saya</a></li>
       <li><a href="/mhs/transkrip" {{if eq .Menu "transkrip"}}class="aktif"{{end}}>Transkrip</a></li>
     {{else if .User.IsDosen}}
       {{/* menu dosen wali dibuat di tahap 5 */}}
