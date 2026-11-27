@@ -1,0 +1,30 @@
+{{define "content"}}
+{{$e := .Errors}}
+{{with .Data}}
+<div class="kepala">
+  <h1>Tambah dosen</h1>
+  <a href="/admin/dosen" class="btn btn-light">‹ Kembali</a>
+</div>
+<div class="kartu">
+<form method="post" action="/admin/dosen">
+  {{template "csrf" $}}
+  <div class="form-group"><label for="nip">NIP</label>
+    <input type="text" id="nip" name="nip" value="{{.Dosen.NIP}}" maxlength="20" required>
+    {{with index $e "nip"}}<span class="err">{{.}}</span>{{end}}</div>
+  <div class="form-group"><label for="name">Nama lengkap</label>
+    <input type="text" id="name" name="name" value="{{.Dosen.Name}}" maxlength="150" required>
+    {{with index $e "name"}}<span class="err">{{.}}</span>{{end}}</div>
+  <div class="baris">
+    <div class="form-group"><label for="email">Email (untuk login)</label>
+      <input type="email" id="email" name="email" value="{{.Dosen.Email}}" maxlength="150" required>
+      {{with index $e "email"}}<span class="err">{{.}}</span>{{end}}</div>
+    <div class="form-group"><label for="password">Password awal</label>
+      <input type="password" id="password" name="password" minlength="8" maxlength="72" required>
+      {{with index $e "password"}}<span class="err">{{.}}</span>{{end}}</div>
+  </div>
+  <p class="redup kecil">Password disimpan sebagai hash bcrypt dan dapat digunakan untuk login setelah dosen didaftarkan.</p>
+  <div class="form-actions"><button class="btn" type="submit">Simpan dosen</button></div>
+</form>
+</div>
+{{end}}
+{{end}}

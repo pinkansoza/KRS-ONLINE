@@ -2,14 +2,12 @@ package handler
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"krs-online/internal/model"
 	"krs-online/internal/service"
 )
 
-// AuthForm = data untuk halaman login (email yang diketik + pesan error).
 type AuthForm struct {
 	Email string
 	Error string
@@ -22,6 +20,13 @@ type AuthHandler struct {
 }
 
 func (h *AuthHandler) FormLogin(w http.ResponseWriter, r *http.Request) {
+	// sudah login? langsung ke beranda
+	if c, err := r.Cookie("session"); err == nil {
+		if _, err := h.Svc.UserDariToken(r.Context(), c.Value); err == nil {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+	}
 	h.View.Tampil(w, r, http.StatusOK, "auth/login.html", Halaman{Title: "Masuk", Data: AuthForm{}})
 }
 
@@ -35,8 +40,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		log.Printf("login: %v", err)
-		http.Error(w, "Terjadi kesalahan pada server", http.StatusInternalServerError)
+		gagal(w, err)
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -51,19 +55,64 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-// Beranda SEMENTARA: membaca cookie langsung. Di langkah 7 tugas ini
-// diambil alih middleware, dan fungsi ini diganti.
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	if c, err := r.Cookie("session"); err == nil {
+		h.Svc.Logout(r.Context(), c.Value)
+	}
+	http.SetCookie(w, &http.Cookie{Name: "session", Value: "", Path: "/", MaxAge: -1})
+	redirect(w, r, "/login", "keluar_app")
+}
+
+// Beranda mengarahkan sesuai users.role.
 func (h *AuthHandler) Beranda(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("session")
+	switch user(r).Role {
+	case model.RoleMahasiswa:
+		http.Redirect(w, r, "/mhs", http.StatusSeeOther)
+	case model.RoleDosen:
+		http.Redirect(w, r, "/dosen", http.StatusSeeOther)
+	default:
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	}
+}
+
+func (h *AuthHandler) FormPassword(w http.ResponseWriter, r *http.Request) {
+	h.View.Tampil(w, r, http.StatusOK, "akun/password.html", Halaman{Title: "Ganti password", Menu: "akun"})
+}
+
+func (h *AuthHandler) GantiPassword(w http.ResponseWriter, r *http.Request) {
+	err := h.Svc.GantiPassword(r.Context(), user(r).ID,
+		r.PostFormValue("lama"), r.PostFormValue("baru"), r.PostFormValue("ulang"))
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		if pesan, fe, ok := pesanValidasi(err); ok {
+			h.View.Tampil(w, r, http.StatusUnprocessableEntity, "akun/password.html",
+				Halaman{Title: "Ganti password", Menu: "akun", Galat: pesan, Errors: fe})
+			return
+		}
+		gagal(w, err)
 		return
 	}
-	u, err := h.Svc.UserDariToken(r.Context(), c.Value)
+	http.SetCookie(w, &http.Cookie{Name: "session", Value: "", Path: "/", MaxAge: -1})
+	redirect(w, r, "/login", "password")
+}
+
+// Profil menampilkan akun yang sedang login: nama, email, dan peran.
+func (h *AuthHandler) Profil(w http.ResponseWriter, r *http.Request) {
+	h.View.Tampil(w, r, http.StatusOK, "akun/profil.html", Halaman{Title: "Akun saya", Menu: "profil"})
+}
+
+func (h *AuthHandler) Notifikasi(w http.ResponseWriter, r *http.Request) {
+	daftar, err := h.Svc.Notifikasi(r.Context(), user(r))
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		gagal(w, err)
 		return
 	}
-	h.View.Tampil(w, r, http.StatusOK, "akun/profil.html",
-		Halaman{Title: "Akun saya", Menu: "profil", User: u})
+	h.View.Tampil(w, r, http.StatusOK, "notifikasi.html", Halaman{Title: "Notifikasi", Menu: "notif", Data: daftar})
+}
+
+func (h *AuthHandler) TandaiDibaca(w http.ResponseWriter, r *http.Request) {
+	if err := h.Svc.TandaiDibaca(r.Context(), user(r)); err != nil {
+		gagal(w, err)
+		return
+	}
+	redirect(w, r, "/notifikasi", "dibaca")
 }

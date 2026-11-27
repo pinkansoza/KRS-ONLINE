@@ -1,0 +1,19 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div><h1>Dosen</h1><span class="redup">{{len .Dosen}} dosen</span></div>
+  <div class="aksi"><a class="btn" href="/admin/dosen/baru">+ Tambah dosen</a></div>
+</div>
+<form class="filter" method="get" action="/admin/dosen">
+  <input type="search" name="q" value="{{.Q}}" placeholder="Cari nama / NIP / email…">
+  <button class="btn btn-light" type="submit">Cari</button>
+</form>
+<div class="tabel"><table>
+  <tr><th>NIP</th><th>Nama</th><th>Email</th><th>Akun</th></tr>
+  {{range .Dosen}}
+  <tr><td>{{.NIP}}</td><td>{{.Name}}</td><td class="kecil">{{if .Email}}{{.Email}}{{else}}—{{end}}</td>
+    <td>{{if .UserID}}Sudah memiliki akun{{else}}Belum memiliki akun{{end}}</td></tr>
+  {{else}}<tr><td colspan="4" class="redup">Tidak ada data.</td></tr>{{end}}
+</table></div>
+{{end}}
+{{end}}``
