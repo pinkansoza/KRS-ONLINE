@@ -11,13 +11,37 @@
 {{with .ModeErr}}<div class="alert kuning">{{.}} Katalog tetap bisa dilihat.</div>{{end}}
 {{if eq .Mode "UBAH"}}<div class="alert kuning">Masa perubahan KRS: kelas yang ditambah akan menunggu persetujuan dosen wali.</div>{{end}}
 
+{{/* Penawaran daftar tunggu ketika kelas penuh (wireframe layar 05) */}}
+{{with .Penuh}}
+<div class="kartu tawar">
+  <span class="badge kuning">Kelas penuh</span>
+  <h2>{{.CourseCode}} {{.CourseName}} — kelas {{.Code}}</h2>
+  <p class="redup">{{jadwal .Schedules}} · {{.LecturerName}}</p>
+  <div class="grid">
+    <div class="stat"><div class="judul">Terisi</div><div class="angka">{{.Enrolled}} / {{.Quota}}</div></div>
+    <div class="stat"><div class="judul">Antrean saat ini</div><div class="angka">{{.Waitlist}} orang</div></div>
+    <div class="stat"><div class="judul">Posisi Anda jika masuk</div><div class="angka">#{{add_one .Waitlist}}</div></div>
+  </div>
+  <ul class="cek-list"><li>Prasyarat terpenuhi</li><li>Tidak bentrok dengan KRS Anda</li><li>Batas SKS cukup</li></ul>
+  <div class="alert info">Jika ada kursi kosong, sistem otomatis mempromosikan antrean teratas yang masih valid dan mengirim notifikasi.</div>
+  <div class="form-actions">
+    <a href="/mhs/katalog" class="btn btn-light">Batal</a>
+    <form method="post" action="/mhs/tunggu" class="inline">
+      {{template "csrf" $}}
+      <input type="hidden" name="class_id" value="{{.ID}}">
+      <button class="btn" type="submit">Masuk daftar tunggu</button>
+    </form>
+  </div>
+</div>
+{{end}}
+
 {{/* Filter memakai form GET: hasilnya query string yang bisa di-bookmark */}}
 <form class="filter" method="get" action="/mhs/katalog">
   <input type="search" name="q" value="{{.Q}}" placeholder="Cari kode / nama mata kuliah / dosen…">
   <select name="status">
     <option value="">Semua status</option>
     <option value="bisa" {{if eq .Status "bisa"}}selected{{end}}>Dapat diambil</option>
-    <option value="penuh" {{if eq .Status "penuh"}}selected{{end}}>Penuh</option>
+    <option value="penuh" {{if eq .Status "penuh"}}selected{{end}}>Penuh (daftar tunggu)</option>
     <option value="tidak" {{if eq .Status "tidak"}}selected{{end}}>Tidak memenuhi syarat</option>
     <option value="dikrs" {{if eq .Status "dikrs"}}selected{{end}}>Sudah di KRS / antre</option>
   </select>
@@ -53,6 +77,12 @@
           <input type="hidden" name="class_id" value="{{.Kelas.ID}}">
           <input type="hidden" name="mode" value="{{$.Data.Mode}}">
           <button class="btn btn-sm" type="submit">Tambah</button>
+        </form>
+      {{else if .BisaTunggu}}
+        <form method="post" action="/mhs/tunggu" class="inline">
+          {{template "csrf" $}}
+          <input type="hidden" name="class_id" value="{{.Kelas.ID}}">
+          <button class="btn btn-sm btn-light" type="submit">Daftar tunggu</button>
         </form>
       {{else}}
         <button class="btn btn-sm btn-light" disabled>Tambah</button>

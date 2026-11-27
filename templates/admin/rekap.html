@@ -1,0 +1,46 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div><h1>Rekap kelas &amp; daftar tunggu</h1><span class="redup">{{.R.Semester.Label}}</span></div>
+  <div class="aksi no-print">
+    <a class="btn btn-light" href="/admin/rekap.json?semester={{.R.Semester.ID}}&q={{.Q}}{{if .Penuh}}&penuh=1{{end}}">JSON</a>
+    <button class="btn btn-light" type="button" data-print>Cetak / PDF</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="judul">Belum mengisi</div><div class="angka">{{.R.Status.BelumMengisi}}</div></div>
+  <div class="stat"><div class="judul">Draft</div><div class="angka">{{.R.Status.Draft}}</div></div>
+  <div class="stat"><div class="judul">Diajukan</div><div class="angka">{{.R.Status.Diajukan}}</div></div>
+  <div class="stat"><div class="judul">Disetujui</div><div class="angka">{{.R.Status.Disetujui}}</div></div>
+</div>
+
+<form class="filter no-print" method="get" action="/admin/rekap">
+  <select name="semester">{{range .Semester}}<option value="{{.ID}}" {{if eq .ID $.Data.R.Semester.ID}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+  <input type="search" name="q" value="{{.Q}}" placeholder="Cari MK / dosen…">
+  <label class="cek"><input type="checkbox" name="penuh" value="1" {{if .Penuh}}checked{{end}}> Hanya kelas penuh</label>
+  <button class="btn btn-light" type="submit">Filter</button>
+</form>
+
+<div class="tabel"><table>
+  <tr><th>Kode</th><th>Mata kuliah</th><th>Kelas</th><th>Dosen</th><th>Jadwal</th><th class="angka">Terisi / kuota</th><th class="angka">Daftar tunggu</th><th class="no-print"></th></tr>
+  {{range .R.Kelas}}
+  <tr><td>{{.CourseCode}}</td><td>{{.CourseName}}</td><td>{{.Code}}</td><td>{{.LecturerName}}</td><td class="kecil">{{jadwal .Schedules}}</td>
+    <td class="angka {{if .Penuh}}penuh{{end}}">{{.Enrolled}} / {{.Quota}}</td><td class="angka">{{.Waitlist}}</td>
+    <td class="no-print"><a class="btn btn-sm btn-light" href="/admin/rekap/kelas/{{.ID}}">Peserta</a></td></tr>
+  {{else}}<tr><td colspan="8" class="redup">Tidak ada kelas.</td></tr>{{end}}
+  <tr><td colspan="5"><b>Total</b></td><td class="angka"><b>{{.R.TotalTerisi}} / {{.R.TotalKuota}}</b></td><td class="angka"><b>{{.R.TotalTunggu}}</b></td><td class="no-print"></td></tr>
+</table></div>
+
+<div class="kartu">
+  <h3>Log promosi daftar tunggu (terbaru)</h3>
+  <div class="tabel"><table>
+    <tr><th>Waktu</th><th>Kelas</th><th>Mahasiswa</th><th>Hasil</th><th>Alasan</th></tr>
+    {{range .R.Promosi}}
+    <tr><td class="kecil">{{tanggal .CreatedAt}}</td><td>{{.ClassLbl}}</td><td>{{.NIM}} {{.Nama}}</td>
+      <td><span class="badge {{badge .Result}}">{{label .Result}}</span></td><td class="kecil">{{.Reason}}</td></tr>
+    {{else}}<tr><td colspan="5" class="redup">Belum ada promosi.</td></tr>{{end}}
+  </table></div>
+</div>
+{{end}}
+{{end}}

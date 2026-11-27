@@ -1,0 +1,40 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div>
+    <a href="/admin/rekap?semester={{.Kelas.SemesterID}}" class="kecil">‹ Rekap</a>
+    <h1>{{.Kelas.CourseCode}} {{.Kelas.CourseName}} — kelas {{.Kelas.Code}}</h1>
+    <span class="redup">{{.Kelas.LecturerName}} · {{jadwal .Kelas.Schedules}}</span>
+  </div>
+  <div class="aksi no-print">
+    <button class="btn btn-light" type="button" data-print>Cetak / PDF</button>
+  </div>
+</div>
+<div class="grid">
+  <div class="stat"><div class="judul">Terisi / kuota</div><div class="angka">{{.Kelas.Enrolled}} <small>/ {{.Kelas.Quota}}</small></div></div>
+  <div class="stat"><div class="judul">Daftar tunggu</div><div class="angka">{{.Kelas.Waitlist}}</div></div>
+</div>
+<div class="grid-2">
+  <div class="kartu">
+    <h2>Peserta</h2>
+    <div class="tabel"><table>
+      <tr><th>No</th><th>NIM</th><th>Nama</th><th>Item</th><th>KRS</th></tr>
+      {{range $i, $p := .Peserta}}
+      <tr><td>{{add_one $i}}</td><td>{{$p.NIM}}</td><td>{{$p.Nama}}</td>
+        <td><span class="badge {{badge $p.Status}}">{{label $p.Status}}</span></td><td><span class="badge {{badge $p.KRSStatus}}">{{label $p.KRSStatus}}</span></td></tr>
+      {{else}}<tr><td colspan="5" class="redup">Belum ada peserta.</td></tr>{{end}}
+    </table></div>
+  </div>
+  <div class="kartu">
+    <h2>Daftar tunggu</h2>
+    <div class="tabel"><table>
+      <tr><th>Posisi</th><th>NIM</th><th>Nama</th><th>Masuk antrean</th><th>Status</th></tr>
+      {{range .Antrean}}
+      <tr {{if ne .Status "MENUNGGU"}}class="redup"{{end}}><td>{{if .Posisi}}#{{.Posisi}}{{else}}–{{end}}</td><td>{{.NIM}}</td><td>{{.Nama}}</td>
+        <td class="kecil">{{tanggal .QueuedAt}}</td><td><span class="badge {{badge .Status}}">{{label .Status}}</span></td></tr>
+      {{else}}<tr><td colspan="5" class="redup">Kosong.</td></tr>{{end}}
+    </table></div>
+  </div>
+</div>
+{{end}}
+{{end}}

@@ -34,7 +34,7 @@ func main() {
 	repo := repository.New(db)
 	authSvc := &service.AuthService{Users: repo.User, Sessions: repo.Session, Notif: repo.Notif}
 	krsSvc := &service.KRSService{R: repo, SKSBaru: cfg.SKSBaru}
-	adminSvc := &service.AdminService{R: repo}
+	adminSvc := &service.AdminService{R: repo, KRS: krsSvc} // tahap 5: KRS dipakai untuk promosi daftar tunggu
 
 	// --- handler ---
 	view := handler.NewRenderer("templates")
@@ -47,6 +47,7 @@ func main() {
 	}
 	authH := &handler.AuthHandler{Svc: authSvc, View: view, CookieSecure: cfg.CookieSecure}
 	mhs := &handler.MahasiswaHandler{Svc: krsSvc, View: view}
+	dosen := &handler.DosenHandler{Svc: krsSvc, View: view}
 	admin := &handler.AdminHandler{Svc: adminSvc, View: view}
 	authMw := &middleware.Auth{Svc: authSvc}
 
@@ -72,10 +73,18 @@ func main() {
 	privat.Handle("POST /mhs/krs/tambah", M(mhs.Tambah))
 	privat.Handle("POST /mhs/krs/ajukan", M(mhs.Ajukan))
 	privat.Handle("POST /mhs/krs/item/{id}/batal", M(mhs.Batal))
+	privat.Handle("GET /mhs/tunggu", M(mhs.DaftarTunggu))
+	privat.Handle("POST /mhs/tunggu", M(mhs.MasukTunggu))
+	privat.Handle("POST /mhs/tunggu/{id}/keluar", M(mhs.KeluarTunggu))
 	privat.Handle("GET /mhs/transkrip", M(mhs.Transkrip))
 
 	// Dosen wali
-	privat.Handle("GET /dosen", D(authH.Profil)) // beranda sementara; daftar bimbingan dibuat di tahap 5
+	privat.Handle("GET /dosen", D(dosen.Daftar))
+	privat.Handle("GET /dosen/krs/{id}", D(dosen.Detail))
+	privat.Handle("POST /dosen/krs/{id}/setujui", D(dosen.Setujui))
+	privat.Handle("POST /dosen/krs/{id}/tolak", D(dosen.Tolak))
+	privat.Handle("POST /dosen/krs/{id}/item/{item}/putuskan", D(dosen.Putuskan))
+	privat.Handle("GET /dosen/mahasiswa/{id}", D(dosen.Transkrip))
 
 	// Admin prodi
 	privat.Handle("GET /admin", A(admin.Dashboard))
@@ -125,6 +134,10 @@ func main() {
 	privat.Handle("POST /admin/nilai", A(admin.SimpanNilai))
 	privat.Handle("POST /admin/nilai/{id}/hapus", A(admin.HapusNilai))
 	privat.Handle("POST /admin/nilai/impor", A(admin.ImporNilai))
+
+	privat.Handle("GET /admin/rekap", A(admin.Rekap))
+	privat.Handle("GET /admin/rekap.json", A(admin.RekapJSON))
+	privat.Handle("GET /admin/rekap/kelas/{id}", A(admin.RekapKelas))
 
 	// publik: boleh diakses tanpa login
 	mux := http.NewServeMux()

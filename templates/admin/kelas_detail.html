@@ -9,6 +9,7 @@
   </div>
   <div class="aksi">
     <a class="btn btn-light" href="/admin/kelas/{{.ID}}/edit">Ubah kelas / kuota</a>
+    <a class="btn btn-light" href="/admin/rekap/kelas/{{.ID}}">Peserta</a>
     <form method="post" action="/admin/kelas/{{.ID}}/hapus" class="inline" data-confirm="Hapus kelas ini? Hanya bisa jika belum ada peserta/antrean.">
       {{template "csrf" $}}<button class="btn btn-merah">Hapus kelas</button></form>
   </div>

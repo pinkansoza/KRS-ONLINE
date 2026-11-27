@@ -1,0 +1,26 @@
+{{define "content"}}
+{{with .Data}}
+<div class="kepala">
+  <div><h1>Daftar tunggu</h1><span class="redup">{{.Semester.Label}} · antrean FIFO berdasarkan waktu masuk</span></div>
+  <div class="aksi"><a class="btn btn-light" href="/mhs/katalog?status=penuh">Lihat kelas penuh</a></div>
+</div>
+<div class="alert info">Saat ada kursi kosong, sistem mengambil antrean teratas yang masih valid (lolos ulang cek bentrok dan batas SKS). Jika tidak valid, antrean ditandai <b>Dilewati</b> beserta alasannya, lalu kursi diberikan ke antrean berikutnya.</div>
+<div class="tabel"><table>
+  <tr><th>Mata kuliah</th><th>Kelas</th><th class="angka">SKS</th><th class="angka">Terisi</th><th class="angka">Posisi</th><th>Masuk antrean</th><th>Status</th><th></th></tr>
+  {{range .Antrean}}
+  <tr {{if ne .Status "MENUNGGU"}}class="redup"{{end}}>
+    <td>{{.Class.CourseCode}} {{.Class.CourseName}}</td><td>{{.Class.Code}}</td><td class="angka">{{.Class.Credits}}</td>
+    <td class="angka">{{.Class.Enrolled}}/{{.Class.Quota}}</td>
+    <td class="angka">{{if eq .Status "MENUNGGU"}}<b>#{{.Posisi}}</b> <small>dari {{.Class.Waitlist}}</small>{{else}}–{{end}}</td>
+    <td class="kecil">{{tanggal .QueuedAt}}</td>
+    <td><span class="badge {{badge .Status}}">{{label .Status}}</span></td>
+    <td>{{if eq .Status "MENUNGGU"}}
+      <form method="post" action="/mhs/tunggu/{{.ID}}/keluar" class="inline" data-confirm="Keluar dari daftar tunggu? Posisi antrean akan hilang.">
+        {{template "csrf" $}}<button class="btn btn-sm btn-merah">Keluar</button></form>{{end}}</td>
+  </tr>
+  {{else}}
+  <tr><td colspan="8" class="redup">Anda tidak sedang mengantre di kelas mana pun.</td></tr>
+  {{end}}
+</table></div>
+{{end}}
+{{end}}

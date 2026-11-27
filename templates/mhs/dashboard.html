@@ -60,6 +60,15 @@
         {{else}}<li class="redup">Belum ada notifikasi.</li>{{end}}
       </ul>
     </div>
+    <div class="kartu">
+      <h3>Daftar tunggu saya</h3>
+      <ul class="daftar">
+        {{range .Tunggu}}{{if eq .Status "MENUNGGU"}}
+          <li>{{.Class.CourseCode}} {{.Class.CourseName}} kelas {{.Class.Code}} — antrean <b>#{{.Posisi}}</b></li>
+        {{end}}{{else}}<li class="redup">Tidak sedang mengantre.</li>{{end}}
+      </ul>
+      <a href="/mhs/tunggu" class="kecil">Kelola daftar tunggu ›</a>
+    </div>
   </div>
 </div>
 

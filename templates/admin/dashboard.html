@@ -1,41 +1,45 @@
 {{define "content"}}
 <div class="kepala">
-    <div>
-        <h1>Dashboard admin</h1><span class="redup">Semester dan periode KRS</span>
-    </div>
-    <div class="aksi"><a class="btn btn-light" href="/admin/semester/baru">+ Semester baru</a></div>
+  <div><h1>Dashboard admin</h1><span class="redup">Periode KRS dan rekap status pengisian</span></div>
+  <div class="aksi"><a class="btn btn-light" href="/admin/semester/baru">+ Semester baru</a></div>
 </div>
 
+{{with .Data.Rekap}}
+<h2>Status KRS {{.Semester.Label}} <small class="redup">(mahasiswa aktif)</small></h2>
+<div class="grid">
+  <div class="stat"><div class="judul">Belum mengisi</div><div class="angka">{{.Status.BelumMengisi}}</div></div>
+  <div class="stat"><div class="judul">Draft</div><div class="angka">{{.Status.Draft}}</div></div>
+  <div class="stat"><div class="judul">Diajukan</div><div class="angka">{{.Status.Diajukan}}</div></div>
+  <div class="stat"><div class="judul">Disetujui</div><div class="angka">{{.Status.Disetujui}}</div><small>dari {{.Status.Total}} mahasiswa</small></div>
+</div>
+<div class="grid">
+  <div class="stat"><div class="judul">Kursi terisi</div><div class="angka">{{.TotalTerisi}} <small>/ {{.TotalKuota}}</small></div>
+    <div class="bar"><span class="p{{persen .TotalTerisi .TotalKuota}}"></span></div></div>
+  <div class="stat"><div class="judul">Total antrean daftar tunggu</div><div class="angka">{{.TotalTunggu}}</div>
+    <small><a href="/admin/rekap">Buka rekap kelas ›</a></small></div>
+</div>
+{{end}}
+
 <div class="kartu">
-    <h2>Semester &amp; periode</h2>
-    <div class="tabel">
-        <table>
-            <tr>
-                <th>Semester</th>
-                <th>Pengisian KRS</th>
-                <th>Persetujuan dosen wali</th>
-                <th>Masa perubahan</th>
-                <th></th>
-            </tr>
-            {{range .Data.Semester}}
-            <tr>
-                <td><b>{{.Label}}</b> {{if .IsActive}}<span class="badge hijau">Aktif</span>{{end}}</td>
-                <td class="kecil">{{tanggal .KRSStart}}<br>s.d. {{tanggal .KRSEnd}}</td>
-                <td class="kecil">{{tanggal .ApprovalStart}}<br>s.d. {{tanggal .ApprovalEnd}}</td>
-                <td class="kecil">{{tanggal .ChangeStart}}<br>s.d. {{tanggal .ChangeEnd}}</td>
-                <td>
-                    <a class="btn btn-sm btn-light" href="/admin/semester/{{.ID}}/edit">Atur periode</a>
-                    {{if not .IsActive}}
-                    <form method="post" action="/admin/semester/{{.ID}}/aktifkan" class="inline"
-                        data-confirm="Jadikan {{.Label}} semester aktif?">
-                        {{template "csrf" $}}<button class="btn btn-sm">Jadikan aktif</button></form>
-                    {{end}}
-                </td>
-            </tr>
-            {{end}}
-        </table>
-    </div>
-    <p class="redup kecil">Pengisian dan perubahan KRS hanya bisa dilakukan mahasiswa di dalam periode yang ditetapkan
-        di sini (BR-11).</p>
+  <h2>Semester &amp; periode</h2>
+  <div class="tabel"><table>
+    <tr><th>Semester</th><th>Pengisian KRS</th><th>Persetujuan dosen wali</th><th>Masa perubahan</th><th></th></tr>
+    {{range .Data.Semester}}
+    <tr>
+      <td><b>{{.Label}}</b> {{if .IsActive}}<span class="badge hijau">Aktif</span>{{end}}</td>
+      <td class="kecil">{{tanggal .KRSStart}}<br>s.d. {{tanggal .KRSEnd}}</td>
+      <td class="kecil">{{tanggal .ApprovalStart}}<br>s.d. {{tanggal .ApprovalEnd}}</td>
+      <td class="kecil">{{tanggal .ChangeStart}}<br>s.d. {{tanggal .ChangeEnd}}</td>
+      <td>
+        <a class="btn btn-sm btn-light" href="/admin/semester/{{.ID}}/edit">Atur periode</a>
+        {{if not .IsActive}}
+        <form method="post" action="/admin/semester/{{.ID}}/aktifkan" class="inline" data-confirm="Jadikan {{.Label}} semester aktif?">
+          {{template "csrf" $}}<button class="btn btn-sm">Jadikan aktif</button></form>
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+  </table></div>
+  <p class="redup kecil">Pengisian dan perubahan KRS hanya bisa dilakukan mahasiswa di dalam periode yang ditetapkan di sini (BR-11).</p>
 </div>
 {{end}}

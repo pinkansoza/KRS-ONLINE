@@ -9,9 +9,11 @@
       <li><a href="/mhs" {{if eq .Menu "dashboard"}}class="aktif"{{end}}>Dashboard</a></li>
       <li><a href="/mhs/katalog" {{if eq .Menu "katalog"}}class="aktif"{{end}}>Katalog kelas</a></li>
       <li><a href="/mhs/krs" {{if eq .Menu "krs"}}class="aktif"{{end}}>KRS Saya</a></li>
+      <li><a href="/mhs/tunggu" {{if eq .Menu "tunggu"}}class="aktif"{{end}}>Daftar tunggu</a></li>
       <li><a href="/mhs/transkrip" {{if eq .Menu "transkrip"}}class="aktif"{{end}}>Transkrip</a></li>
     {{else if .User.IsDosen}}
-      {{/* menu dosen wali dibuat di tahap 5 */}}
+      <li><a href="/dosen" {{if eq .Menu "bimbingan"}}class="aktif"{{end}}>KRS bimbingan</a></li>
+      <li><a href="/dosen?status=PERUBAHAN" {{if eq .Menu "perubahan"}}class="aktif"{{end}}>Permintaan perubahan</a></li>
     {{else if .User.IsAdmin}}
       <li><a href="/admin" {{if eq .Menu "dashboard"}}class="aktif"{{end}}>Dashboard &amp; periode</a></li>
       <li class="grup">Master data</li>
@@ -21,6 +23,8 @@
       <li><a href="/admin/mahasiswa" {{if eq .Menu "mhs"}}class="aktif"{{end}}>Mahasiswa</a></li>
       <li><a href="/admin/dosen" {{if eq .Menu "dosen-admin"}}class="aktif"{{end}}>Dosen</a></li>
       <li><a href="/admin/nilai" {{if eq .Menu "nilai"}}class="aktif"{{end}}>Input nilai</a></li>
+      <li class="grup">Laporan</li>
+      <li><a href="/admin/rekap" {{if eq .Menu "rekap"}}class="aktif"{{end}}>Rekap kelas &amp; daftar tunggu</a></li>
     {{end}}
     <li class="grup">Akun</li>
     <li><a href="/akun" {{if eq .Menu "profil"}}class="aktif"{{end}}>Akun saya</a></li>

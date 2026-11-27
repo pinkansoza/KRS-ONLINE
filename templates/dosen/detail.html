@@ -1,0 +1,97 @@
+{{define "content"}}
+{{$buka := .Data.BukaTolak}}
+{{with .Data.D}}
+<div class="kepala">
+  <div>
+    <a href="/dosen" class="kecil">‹ KRS bimbingan</a>
+    <h1>{{.Mhs.Name}} <small class="redup">{{.Mhs.NIM}}</small> <span class="badge {{badge .KRS.Status}}">{{.KRS.Status}}</span></h1>
+    <span class="redup">{{.Semester.Label}} · {{.Mhs.CurriculumName}} · <a href="/dosen/mahasiswa/{{.Mhs.ID}}">lihat transkrip</a></span>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="judul">IPS acuan</div><div class="angka">{{if .KRS.AdaIPS}}{{koma .KRS.IPSRef}}{{else}}—{{end}}</div><small>Batas {{.KRS.MaxCredits}} SKS</small></div>
+  <div class="stat"><div class="judul">Total SKS</div><div class="angka">{{.TotalSKS}} <small>/ {{.KRS.MaxCredits}}</small></div>
+    <div class="bar"><span class="p{{persen .TotalSKS .KRS.MaxCredits}}"></span></div></div>
+  <div class="stat"><div class="judul">IPK</div><div class="angka">{{koma .IPK}}</div></div>
+  <div class="stat"><div class="judul">Diajukan</div><div class="angka kecil">{{tanggal .KRS.SubmittedAt}}</div></div>
+</div>
+
+<div class="grid-2">
+<div>
+  <div class="kartu">
+    <h2>Kelas di KRS</h2>
+    <div class="tabel"><table>
+      <tr><th>Kode</th><th>Mata kuliah</th><th>Kls</th><th>Jadwal</th><th class="angka">SKS</th><th>Status</th><th>Validasi</th></tr>
+      {{range .Items}}
+      <tr><td>{{.Class.CourseCode}}</td><td>{{.Class.CourseName}}</td><td>{{.Class.Code}}</td>
+        <td class="kecil">{{jadwal .Class.Schedules}}</td><td class="angka">{{.Class.Credits}}</td>
+        <td><span class="badge {{badge .Status}}">{{label .Status}}</span></td>
+        <td>{{if .Valid}}<span class="badge hijau">Valid</span>{{else}}<span class="badge merah">Tidak valid</span><br><small>{{.Pesan}}</small>{{end}}</td></tr>
+      {{if or (eq .Status "MENUNGGU_TAMBAH") (eq .Status "MENUNGGU_BATAL")}}
+      <tr><td colspan="7">
+        <form method="post" action="/dosen/krs/{{$.Data.D.KRS.ID}}/item/{{.ID}}/putuskan" class="baris">
+          {{template "csrf" $}}
+          <div class="form-group"><label>Keputusan {{label .Status}} {{.Class.CourseCode}} (catatan wajib jika menolak)</label>
+            <input type="text" name="catatan" maxlength="500" placeholder="Catatan untuk mahasiswa"></div>
+          <button class="btn btn-sm btn-hijau" name="aksi" value="setuju">Setujui</button>
+          <button class="btn btn-sm btn-merah" name="aksi" value="tolak">Tolak</button>
+        </form>
+      </td></tr>
+      {{end}}
+      {{else}}<tr><td colspan="7" class="redup">KRS kosong.</td></tr>{{end}}
+    </table></div>
+    <h3>Ringkasan validasi ulang sistem</h3>
+    <ul class="cek-list">
+      <li {{if not .SemuaValid}}class="x"{{end}}>{{if .SemuaValid}}Semua kelas lolos cek prasyarat, bentrok, dan batas SKS{{else}}Ada kelas yang tidak valid — minta revisi{{end}}</li>
+      <li {{if gt .TotalSKS .KRS.MaxCredits}}class="x"{{end}}>{{.TotalSKS}} SKS ≤ batas {{.KRS.MaxCredits}} SKS</li>
+      <li>Semua kelas memegang kursi (kuota terpenuhi)</li>
+    </ul>
+    {{with .Riwayat}}<details><summary>Kelas yang dibatalkan ({{len .}})</summary>
+      <ul class="daftar">{{range .}}<li class="redup">{{.Class.CourseCode}} {{.Class.CourseName}} kelas {{.Class.Code}}</li>{{end}}</ul></details>{{end}}
+  </div>
+
+  {{if eq .KRS.Status "DIAJUKAN"}}
+  <div class="kartu">
+    <h2>Keputusan dosen wali</h2>
+    {{if not .MasaSetuju}}<div class="alert kuning">Saat ini di luar periode persetujuan ({{tanggal .Semester.ApprovalStart}} – {{tanggal .Semester.ApprovalEnd}}).</div>{{end}}
+    <div class="grid-2">
+      <form method="post" action="/dosen/krs/{{.KRS.ID}}/setujui" data-confirm="Setujui KRS ini? KRS akan terkunci.">
+        {{template "csrf" $}}
+        <div class="form-group"><label for="catatan-ok">Catatan (opsional)</label>
+          <input type="text" id="catatan-ok" name="catatan" maxlength="500"></div>
+        <button class="btn btn-hijau" {{if not .SemuaValid}}disabled{{end}}>✓ Setujui KRS</button>
+      </form>
+      <form method="post" action="/dosen/krs/{{.KRS.ID}}/tolak">
+        {{template "csrf" $}}
+        <div class="form-group"><label for="catatan-tolak">Catatan untuk mahasiswa *</label>
+          <textarea id="catatan-tolak" name="catatan" maxlength="500" required {{if $buka}}autofocus{{end}} placeholder='Mis. "Tambahkan IF502 Kecerdasan Buatan agar beban sesuai semester anjuran."'></textarea></div>
+        <button class="btn btn-merah">Tolak / minta revisi</button>
+        <small class="redup">KRS akan kembali ke status DRAFT.</small>
+      </form>
+    </div>
+  </div>
+  {{end}}
+</div>
+
+<div>
+  <div class="kartu">
+    <h3>Riwayat</h3>
+    <ul class="daftar">
+      {{range .Log}}
+      <li><span class="badge {{badge .Action}}">{{label .Action}}</span> {{.ActorName}}{{with .ItemLabel}} · {{.}}{{end}}
+        <br><small>{{tanggal .CreatedAt}}</small>{{with .Note}}<br><i>“{{.}}”</i>{{end}}</li>
+      {{else}}<li class="redup">Belum ada riwayat.</li>{{end}}
+    </ul>
+  </div>
+  <div class="kartu">
+    <h3>Daftar tunggu mahasiswa</h3>
+    <ul class="daftar">
+      {{range .Antrean}}<li>{{.Class.CourseCode}} {{.Class.CourseName}} {{.Class.Code}} — <span class="badge {{badge .Status}}">{{label .Status}}</span>{{if .Posisi}} #{{.Posisi}}{{end}}</li>
+      {{else}}<li class="redup">Tidak ada.</li>{{end}}
+    </ul>
+  </div>
+</div>
+</div>
+{{end}}
+{{end}}

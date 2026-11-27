@@ -1,28 +1,38 @@
-// Titik sambung service: fungsi kecil yang isinya berubah ketika fitur di
-// tahap berikutnya sudah ada. Tahap 5 mengganti file ini dengan versi lengkap.
+// Titik sambung service (versi lengkap tahap 5). Fungsi-fungsi ini sudah ada
+// sejak tahap 3 dan 4 dalam bentuk sederhana; di tahap 5 isinya disambungkan
+// ke daftar tunggu.
 
 package service
 
 import (
 	"context"
 
+	"krs-online/internal/model"
 	"krs-online/internal/repository"
 )
 
-// kuotaBertambah dipanggil (di dalam transaksi) setelah admin menaikkan kuota kelas.
-// Daftar tunggu belum ada, jadi tidak ada yang dikerjakan (diisi di tahap 5).
+// kuotaBertambah: kalau kuota dinaikkan, kursi baru langsung diisi dari daftar tunggu (FR-B3).
 func (s *AdminService) kuotaBertambah(ctx context.Context, tx *repository.Repos, classID int) error {
-	return nil
+	return s.KRS.promosikan(ctx, tx, classID)
 }
 
-// kursiKosong dipanggil (di dalam transaksi) setelah mahasiswa melepas kursi.
-// Tahap 4: kursi cukup dilepas. Tahap 5: kursi diberikan ke antrean terdepan.
+// kursiKosong: kursi yang dilepas diberikan ke antrean terdepan yang masih valid (FR-E3, BR-8).
 func (s *KRSService) kursiKosong(ctx context.Context, tx *repository.Repos, classID int) error {
-	return nil
+	return s.promosikan(ctx, tx, classID)
 }
 
 // antreanMenunggu = course_id yang sedang diantrekan mahasiswa di semester ini.
-// Tahap 4: daftar tunggu belum ada, jadi selalu kosong.
+// Dipakai validasi supaya mahasiswa tidak mengambil MK yang sedang ia antrekan.
 func antreanMenunggu(ctx context.Context, r *repository.Repos, studentID, semesterID int) (map[int]bool, error) {
-	return map[int]bool{}, nil
+	menunggu := map[int]bool{}
+	antre, err := r.Waitlist.MilikMahasiswa(ctx, studentID, semesterID)
+	if err != nil {
+		return nil, err
+	}
+	for _, w := range antre {
+		if w.Status == model.TungguMenunggu {
+			menunggu[w.Class.CourseID] = true
+		}
+	}
+	return menunggu, nil
 }
